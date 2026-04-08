@@ -861,7 +861,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduledSyncDescription => '定期在后台自动同步';
 
   @override
-  String get sync => '同步';
+  String get tabHome => 'Home';
 
   @override
   String get iosDefaultSyncRate => '当 iOS 允许时';
@@ -2253,6 +2253,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get providerTools => 'Provider Tools';
+
+  @override
+  String get tabChat => 'Chat';
+
+  @override
+  String get tabFiles => 'Files';
+
+  @override
+  String get chatComingSoon => 'Chat features coming soon';
+
+  @override
+  String get chatComingSoonSubtitle => 'Interact with your files using Claude Code';
+
+  @override
+  String get noRepoSetup => 'Set up a repository first';
+
+  @override
+  String get enableAiFeatures => 'Enable AI Features';
+
+  @override
+  String get hideAiFeatures => 'Hide AI Features';
+
+  @override
+  String get hideAiFeaturesConfirmTitle => 'Hide AI Features?';
+
+  @override
+  String get hideAiFeaturesConfirmMsg =>
+      'This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.';
+
+  @override
+  String get aiSetupTitle => 'Set Up AI';
+
+  @override
+  String get aiSetupMsg => 'Configure an AI provider to use this feature. Go to AI settings?';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

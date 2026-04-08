@@ -117,7 +117,7 @@ class GitsyncService {
     s = ServiceStrings.fromMap(stringMap);
   }
 
-  Future<void> debouncedSync(int repomanRepoindex, [bool forced = false, bool immediate = false]) async {
+  Future<void> debouncedSync(int repomanRepoindex, [bool forced = false, bool immediate = false, String? syncMessage]) async {
     final settingsManager = SettingsManager();
     await settingsManager.reinit(repoIndex: repomanRepoindex);
 
@@ -132,10 +132,10 @@ class GitsyncService {
         return;
       } else {
         if (immediate) {
-          await _sync(repomanRepoindex, forced);
+          await _sync(repomanRepoindex, forced, syncMessage);
           return;
         }
-        debounce(repomanRepoindex.toString(), 500, () => _sync(repomanRepoindex, forced));
+        debounce(repomanRepoindex.toString(), 500, () => _sync(repomanRepoindex, forced, syncMessage));
       }
     }
   }
@@ -166,7 +166,7 @@ class GitsyncService {
     });
   }
 
-  Future<void> _sync(int repomanRepoindex, [bool forced = false]) async {
+  Future<void> _sync(int repomanRepoindex, [bool forced = false, String? syncMessage]) async {
     try {
       isSyncing = true;
 
@@ -216,7 +216,7 @@ class GitsyncService {
         bool synced = false;
 
         final optimisedSyncFlag = await settingsManager.getBool(StorageKey.setman_optimisedSyncExperimental);
-        int? recommendedAction = await GitManager.getRecommendedAction(3);
+        int? recommendedAction = await GitManager.getRecommendedAction(priority: 3);
 
         if (optimisedSyncFlag && (recommendedAction == null || recommendedAction == -1)) return;
 
@@ -248,7 +248,12 @@ class GitsyncService {
           }
         }
 
-        recommendedAction = await GitManager.getRecommendedAction(3);
+        if ((await GitManager.getConflicting(repomanRepoindex, 3)).isNotEmpty) {
+          _displaySyncMessage(null, s.ongoingMergeConflict);
+          return;
+        }
+
+        recommendedAction = await GitManager.getRecommendedAction(priority: 3);
         if (optimisedSyncFlag && (recommendedAction == null || recommendedAction == -1)) return;
 
         if (!optimisedSyncFlag || [2, 3].contains(recommendedAction)) {
@@ -262,7 +267,7 @@ class GitsyncService {
               }
             },
             null,
-            null,
+            syncMessage,
             () => debouncedSync(repomanRepoindex),
           );
 
@@ -302,7 +307,7 @@ class GitsyncService {
         Logger.gmLog(type: LogType.Sync, "Sync Complete!");
       }
 
-      await GitManager.getRecentCommits(3);
+      await GitManager.getRecentCommits(priority: 3);
     } catch (e, st) {
       Logger.logError(LogType.SyncException, e, st);
     } finally {

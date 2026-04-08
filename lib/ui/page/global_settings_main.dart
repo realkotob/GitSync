@@ -90,14 +90,14 @@ class _GlobalSettingsMain extends State<GlobalSettingsMain> with WidgetsBindingO
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: colours.secondaryDark,
+      backgroundColor: colours.primaryDark,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: colours.secondaryDark,
-          systemNavigationBarColor: colours.secondaryDark,
+          statusBarColor: colours.primaryDark,
+          systemNavigationBarColor: colours.primaryDark,
           statusBarIconBrightness: Brightness.light,
           systemNavigationBarIconBrightness: Brightness.light,
         ),
@@ -415,6 +415,41 @@ class _GlobalSettingsMain extends State<GlobalSettingsMain> with WidgetsBindingO
                           width: double.infinity,
                           child: Text(
                             t.enableLineWrap.toUpperCase(),
+                            style: TextStyle(color: colours.primaryLight, fontSize: textMD, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: spaceMD),
+                    FutureBuilder(
+                      future: repoManager.getBool(StorageKey.repoman_aiFeaturesEnabled),
+                      builder: (context, aiFeaturesEnabledSnapshot) => TextButton.icon(
+                        onPressed: () async {
+                          final next = !(aiFeaturesEnabledSnapshot.data ?? true);
+                          await repoManager.setBool(StorageKey.repoman_aiFeaturesEnabled, next);
+                          aiFeaturesEnabled.value = next;
+                          if (mounted) setState(() {});
+                        },
+                        style: ButtonStyle(
+                          alignment: Alignment.centerLeft,
+                          backgroundColor: WidgetStatePropertyAll(colours.tertiaryDark),
+                          padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceMD)),
+                          shape: WidgetStatePropertyAll(
+                            RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusMD), side: BorderSide.none),
+                          ),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          minimumSize: WidgetStatePropertyAll(Size.zero),
+                        ),
+                        iconAlignment: IconAlignment.end,
+                        icon: FaIcon(
+                          (aiFeaturesEnabledSnapshot.data ?? true) ? FontAwesomeIcons.solidSquareCheck : FontAwesomeIcons.squareCheck,
+                          color: colours.primaryPositive,
+                          size: textLG,
+                        ),
+                        label: SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            t.enableAiFeatures.toUpperCase(),
                             style: TextStyle(color: colours.primaryLight, fontSize: textMD, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -1006,14 +1041,14 @@ class _GlobalSettingsMain extends State<GlobalSettingsMain> with WidgetsBindingO
 
 @pragma('vm:entry-point')
 Route<String?> createGlobalSettingsMainRoute(BuildContext context, Object? args) {
-  (args as Map<String, dynamic>);
+  final argsMap = (args as Map).cast<String, dynamic>();
 
   return PageRouteBuilder(
     settings: const RouteSettings(name: global_settings_main),
     pageBuilder: (context, animation, secondaryAnimation) => ShowCaseWidget(
       builder: (context) => GlobalSettingsMain(
-        args["recentCommits"].map<GitManagerRs.Commit>((path) => CommitJson.fromJson(jsonDecode(utf8.fuse(base64).decode("$path")))).toList(),
-        onboarding: args["onboarding"] == true,
+        argsMap["recentCommits"].map<GitManagerRs.Commit>((path) => CommitJson.fromJson(jsonDecode(utf8.fuse(base64).decode("$path")))).toList(),
+        onboarding: argsMap["onboarding"] == true,
       ),
     ),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
