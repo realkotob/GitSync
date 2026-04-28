@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:GitSync/ui/component/markdown_config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,6 +10,9 @@ import 'package:GitSync/constant/dimens.dart';
 import 'package:GitSync/constant/reactions.dart';
 import 'package:GitSync/constant/strings.dart';
 import 'package:GitSync/global.dart';
+import 'package:GitSync/providers/riverpod_providers.dart';
+import 'package:GitSync/ui/component/ai_wand_field.dart';
+import 'package:GitSync/api/ai_completion_service.dart';
 import 'package:GitSync/type/git_provider.dart';
 import 'package:GitSync/type/issue_detail.dart';
 import 'package:GitSync/type/pr_detail.dart';
@@ -17,7 +21,7 @@ import 'package:GitSync/ui/component/post_footer_indicator.dart';
 import 'package:GitSync/ui/page/code_editor.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class PrDetailPage extends StatefulWidget {
+class PrDetailPage extends ConsumerStatefulWidget {
   final GitProvider gitProvider;
   final String remoteWebUrl;
   final String accessToken;
@@ -36,10 +40,10 @@ class PrDetailPage extends StatefulWidget {
   });
 
   @override
-  State<PrDetailPage> createState() => _PrDetailPageState();
+  ConsumerState<PrDetailPage> createState() => _PrDetailPageState();
 }
 
-class _PrDetailPageState extends State<PrDetailPage> with SingleTickerProviderStateMixin {
+class _PrDetailPageState extends ConsumerState<PrDetailPage> with SingleTickerProviderStateMixin {
   PrDetail? _detail;
   bool _loading = true;
   bool _submittingComment = false;
@@ -93,7 +97,8 @@ class _PrDetailPageState extends State<PrDetailPage> with SingleTickerProviderSt
     final manager = _manager;
     if (manager == null) return;
 
-    final bodyWithFooter = await uiSettingsManager.applyPostFooter(body);
+    final footer = ref.read(postFooterProvider).valueOrNull ?? '';
+    final bodyWithFooter = footer.trim().isEmpty ? body : '$body\n$footer';
     final comment = await manager.addIssueComment(widget.accessToken, owner, repo, widget.prNumber, bodyWithFooter);
     if (!mounted) return;
 
@@ -219,7 +224,7 @@ class _PrDetailPageState extends State<PrDetailPage> with SingleTickerProviderSt
   }
 
   Widget _buildHeader() {
-    final (IconData icon, Color color) = _detail != null
+    final (FaIconData icon, Color color) = _detail != null
         ? switch (_detail!.state) {
             PrState.open => (FontAwesomeIcons.codePullRequest, colours.tertiaryPositive),
             PrState.merged => (FontAwesomeIcons.codeMerge, colours.secondaryInfo),
@@ -650,7 +655,7 @@ class _PrDetailPageState extends State<PrDetailPage> with SingleTickerProviderSt
 
   Widget _buildChecksSummaryStamp() {
     final detail = _detail!;
-    final (IconData icon, Color color, String text) = switch (detail.overallCheckStatus) {
+    final (FaIconData icon, Color color, String text) = switch (detail.overallCheckStatus) {
       CheckStatus.success => (FontAwesomeIcons.solidCircleCheck, colours.tertiaryPositive, t.prAllChecksPassed),
       CheckStatus.failure => (
         FontAwesomeIcons.solidCircleXmark,
@@ -881,20 +886,54 @@ class _PrDetailPageState extends State<PrDetailPage> with SingleTickerProviderSt
           if (_writeMode)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: spaceSM),
-              child: TextField(
-                contextMenuBuilder: globalContextMenuBuilder,
-                controller: _commentController,
-                maxLines: 5,
-                minLines: 3,
-                style: TextStyle(color: colours.primaryLight, fontSize: textSM, decoration: TextDecoration.none, decorationThickness: 0),
-                decoration: InputDecoration(
-                  fillColor: colours.tertiaryDark,
-                  filled: true,
-                  border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
-                  isCollapsed: true,
-                  hintText: t.issueAddComment,
-                  hintStyle: TextStyle(color: colours.tertiaryLight, fontSize: textSM),
-                  contentPadding: EdgeInsets.all(spaceSM),
+              child: AiWandField(
+                multiline: true,
+                onPressed: () async {
+                  final detail = _detail;
+                  if (detail == null) return;
+                  final labels = detail.labels.map((l) => l.name).join(', ');
+                  final files = detail.changedFiles.map((f) => f.filename).join(', ');
+                  final recentComments = detail.timelineItems.where((t) => t.type == PrTimelineItemType.comment && t.comment != null).toList();
+                  final lastComments = recentComments.length > 5 ? recentComments.sublist(recentComments.length - 5) : recentComments;
+                  final commentText = lastComments.map((t) => '@${t.comment!.authorUsername}: ${t.comment!.body}').join('\n');
+                  final patchText = StringBuffer();
+                  for (final f in detail.changedFiles) {
+                    if (patchText.length > 3000) break;
+                    patchText.writeln(f.filename);
+                    if (f.patch != null) {
+                      final remaining = 3000 - patchText.length;
+                      patchText.writeln(f.patch!.length > remaining ? f.patch!.substring(0, remaining) : f.patch);
+                    }
+                  }
+                  final prompt =
+                      'PR: ${detail.title} [${detail.state.name}]\n'
+                      '${detail.headBranch} → ${detail.baseBranch}\n'
+                      '+${detail.additions}/-${detail.deletions} across ${detail.changedFileCount} files\n'
+                      'Labels: $labels\n\n'
+                      'Changed files:\n$patchText\n\n'
+                      'Body:\n${detail.body}\n\n'
+                      'Recent comments:\n$commentText';
+                  final result = await aiComplete(
+                    systemPrompt: "Draft a helpful comment for this pull request. Be concise and relevant.",
+                    userPrompt: prompt,
+                  );
+                  if (result != null) _commentController.text = result.trim();
+                },
+                child: TextField(
+                  contextMenuBuilder: globalContextMenuBuilder,
+                  controller: _commentController,
+                  maxLines: 5,
+                  minLines: 3,
+                  style: TextStyle(color: colours.primaryLight, fontSize: textSM, decoration: TextDecoration.none, decorationThickness: 0),
+                  decoration: InputDecoration(
+                    fillColor: colours.tertiaryDark,
+                    filled: true,
+                    border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
+                    isCollapsed: true,
+                    hintText: t.issueAddComment,
+                    hintStyle: TextStyle(color: colours.tertiaryLight, fontSize: textSM),
+                    contentPadding: EdgeInsets.all(spaceSM),
+                  ),
                 ),
               ),
             )
@@ -1038,7 +1077,7 @@ class _PrDetailPageState extends State<PrDetailPage> with SingleTickerProviderSt
 
         // Individual check runs
         ...detail.checkRuns.map((check) {
-          final (IconData icon, Color color) = switch (check.conclusion) {
+          final (FaIconData icon, Color color) = switch (check.conclusion) {
             "success" => (FontAwesomeIcons.solidCircleCheck, colours.tertiaryPositive),
             "failure" => (FontAwesomeIcons.solidCircleXmark, colours.tertiaryNegative),
             "cancelled" || "skipped" => (FontAwesomeIcons.circleMinus, colours.tertiaryLight),
@@ -1164,7 +1203,7 @@ class _PrDetailPageState extends State<PrDetailPage> with SingleTickerProviderSt
           final expanded = _expandedFiles.contains(index);
           final hasPatch = file.patch != null && file.patch!.isNotEmpty;
 
-          final (IconData icon, Color color) = switch (file.status) {
+          final (FaIconData icon, Color color) = switch (file.status) {
             "added" => (FontAwesomeIcons.plus, colours.tertiaryPositive),
             "removed" => (FontAwesomeIcons.minus, colours.tertiaryNegative),
             "renamed" => (FontAwesomeIcons.arrowRight, colours.tertiaryWarning),

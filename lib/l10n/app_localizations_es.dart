@@ -138,16 +138,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get restorePurchase => 'Restaurar Compra';
 
   @override
-  String get verifyGhSponsorTitle => 'Verificar Patrocinio de GitHub';
-
-  @override
-  String get verifyGhSponsorMsg =>
-      'Si eres un Patrocinador de GitHub, puedes acceder a las funciones premium de forma gratuita. Autentícate con GitHub para que podamos verificar tu estado de patrocinador.';
-
-  @override
-  String get verifyGhSponsorNote => 'Nota: los nuevos patrocinios pueden tardar hasta 1 día en estar disponibles en la aplicación.';
-
-  @override
   String get premiumStoreOnlyBanner => 'Store version only — Get it on the App Store or Play Store';
 
   @override
@@ -868,7 +858,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scheduledSyncDescription => 'Automatically syncs periodically in the background';
 
   @override
-  String get sync => 'Sync';
+  String get tabHome => 'Home';
 
   @override
   String get iosDefaultSyncRate => 'cuando iOS lo permita';
@@ -944,6 +934,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get useForWidgetManualSync => 'Use for Manual Sync Widget';
+
+  @override
+  String get remoteAuthMismatchTitle => 'Auth won\'t work with this remote';
+
+  @override
+  String get remoteAuthMismatchUsesSsh => 'This remote uses SSH — tap to switch';
+
+  @override
+  String get remoteAuthMismatchUsesHttps => 'This remote uses HTTPS or OAuth — tap to switch';
 
   @override
   String get selectYourGitProviderAndAuthenticate => 'Selecciona tu proveedor git y auténticate';
@@ -2271,4 +2270,38 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get providerTools => 'Provider Tools';
+
+  @override
+  String get tabChat => 'Chat';
+
+  @override
+  String get tabFiles => 'Files';
+
+  @override
+  String get chatComingSoon => 'Chat features coming soon';
+
+  @override
+  String get chatComingSoonSubtitle => 'Interact with your files using Claude Code';
+
+  @override
+  String get noRepoSetup => 'Set up a repository first';
+
+  @override
+  String get enableAiFeatures => 'Enable AI Features';
+
+  @override
+  String get hideAiFeatures => 'Hide AI Features';
+
+  @override
+  String get hideAiFeaturesConfirmTitle => 'Hide AI Features?';
+
+  @override
+  String get hideAiFeaturesConfirmMsg =>
+      'This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.';
+
+  @override
+  String get aiSetupTitle => 'Set Up AI';
+
+  @override
+  String get aiSetupMsg => 'Configure an AI provider to use this feature. Go to AI settings?';
 }

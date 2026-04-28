@@ -29,6 +29,8 @@ import 'package:ios_document_picker/ios_document_picker.dart';
 import 'package:ios_document_picker/types.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:GitSync/providers/riverpod_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constant/dimens.dart';
 import '../ui/dialog/create_repository.dart' as CreateRepositoryDialog;
@@ -301,12 +303,7 @@ Future<(GitProvider, String, String, bool)?> _getOAuthInfo() async {
   return (provider, credentials.$1, credentials.$2, githubAppOauth);
 }
 
-Future<void> _offerCreateRemoteForDir(
-  BuildContext context,
-  String dirName,
-  (GitProvider, String, String, bool) oAuthInfo,
-  String? dirPath,
-) async {
+Future<void> _offerCreateRemoteForDir(BuildContext context, String dirName, (GitProvider, String, String, bool) oAuthInfo, String? dirPath) async {
   final result = await CreateRepositoryDialog.showDialog(
     context,
     hasOAuth: true,
@@ -339,7 +336,7 @@ Future<void> _performRemoteRepoCreation(
     return;
   }
 
-  await GitManager.addRemote("origin", createResult.$1, dirPath);
+  await GitManager.addRemote("origin", createResult.$1, dirPathOverride: dirPath);
 
   if (initMainBranch && dirPath != null) {
     try {
@@ -377,10 +374,11 @@ Future<void> offerCreateRemoteForExistingRepo(BuildContext context, String dir) 
   }
 }
 
-Future<void> setGitDirPathGetSubmodules(BuildContext context, String dir) async {
+Future<void> setGitDirPathGetSubmodules(BuildContext context, String dir, WidgetRef ref) async {
   await uiSettingsManager.setGitDirPath(dir);
+  ref.invalidate(gitDirPathProvider);
 
-  final dirPath = uiSettingsManager.gitDirPath?.$1;
+  final dirPath = (await uiSettingsManager.getGitDirPath())?.$1;
   if (dirPath != null) {
     await useDirectory(dirPath, (bookmarkPath) async => await uiSettingsManager.setGitDirPath(bookmarkPath, true), (dirPath) async {
       if (await Directory('$dirPath/$obsidianPath').exists() && await Directory('$dirPath/$obsidianGitPath').exists()) {
@@ -503,11 +501,14 @@ Future<T?> useDirectory<T>(
 
   try {
     final bookmarkAndPath = await iosDocumentPickerPlugin.resolveBookmark(bookmark, isDirectory: true);
-    if (bookmarkAndPath == null) return null;
+    if (bookmarkAndPath == null) {
+      Logger.logError(LogType.SelectDirectory, noFolderAccessError, StackTrace.fromString(""));
+      return null;
+    }
     await setBookmarkPath(bookmarkAndPath.$1);
     path = pathSuffix.isEmpty ? bookmarkAndPath.$2 : "${bookmarkAndPath.$2}/$pathSuffix";
   } catch (e) {
-    print(e);
+    Logger.logError(LogType.SelectDirectory, noFolderAccessError, StackTrace.fromString("$e"));
     return null;
   }
 
@@ -517,7 +518,7 @@ Future<T?> useDirectory<T>(
 
   final hasAccess = await iosDocumentPickerPlugin.startAccessing(path);
   if (!hasAccess) {
-    Logger.logError(LogType.SelectDirectory, "No folder access", StackTrace.fromString(""));
+    Logger.logError(LogType.SelectDirectory, noFolderAccessError, StackTrace.fromString(""));
     return null;
   }
 
@@ -667,4 +668,28 @@ extension ValueNotifierExtension on RestorableValue<bool> {
 
     return result;
   }
+}
+
+enum RemoteScheme { https, ssh, unknown }
+
+RemoteScheme detectRemoteScheme(String? url) {
+  if (url == null || url.isEmpty) return RemoteScheme.unknown;
+  final u = url.trim();
+  if (u.startsWith('http://') || u.startsWith('https://')) return RemoteScheme.https;
+  if (u.startsWith('ssh://') || RegExp(r'^[A-Za-z0-9_.-]+@[^:]+:').hasMatch(u)) return RemoteScheme.ssh;
+  return RemoteScheme.unknown;
+}
+
+/// Returns a token describing the direction of a remote-URL/auth mismatch, or
+/// null when the pair is compatible or the URL's scheme isn't detectable.
+/// - 'httpsWithSshAuth': remote URL is http(s), provider is SSH.
+/// - 'sshWithHttpsAuth': remote URL is ssh/git@, provider is a http-based one.
+String? remoteAuthMismatch(String? url, GitProvider? provider) {
+  if (provider == null) return null;
+  final scheme = detectRemoteScheme(url);
+  if (scheme == RemoteScheme.unknown) return null;
+  final providerIsHttps = provider != GitProvider.SSH;
+  if (scheme == RemoteScheme.https && !providerIsHttps) return 'httpsWithSshAuth';
+  if (scheme == RemoteScheme.ssh && providerIsHttps) return 'sshWithHttpsAuth';
+  return null;
 }

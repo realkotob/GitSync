@@ -55,9 +55,6 @@
     "@@x-PAID_FEATURES": "",
     "premiumDialogTitle": "Unlock Premium",
     "restorePurchase": "Restore Purchase",
-    "verifyGhSponsorTitle": "Verify GitHub Sponsorship",
-    "verifyGhSponsorMsg": "If you are a GitHub Sponsor, you can access premium features for free. Authenticate with GitHub so we can verify your sponsor status.",
-    "verifyGhSponsorNote": "Note: new sponsorships may take up to 1 day to become available in the app.",
 
     "premiumStoreOnlyBanner": "Store version only — Get it on the App Store or Play Store",
 
@@ -336,7 +333,7 @@
     "iosSyncOnAppOpened": "Sync on GitSync opened",
     "scheduledSyncSettings": "Scheduled Sync Settings",
     "scheduledSyncDescription": "Automatically syncs periodically in the background",
-    "sync": "Sync",
+    "tabHome": "Home",
     "iosDefaultSyncRate": "when iOS allows",
     "every": "every",
     "scheduledSync": "Scheduled Sync",
@@ -365,6 +362,9 @@
 
 
     "@@x-AUTH": "",
+    "remoteAuthMismatchTitle": "Auth won't work with this remote",
+    "remoteAuthMismatchUsesSsh": "This remote uses SSH — tap to switch",
+    "remoteAuthMismatchUsesHttps": "This remote uses HTTPS or OAuth — tap to switch",
     "selectYourGitProviderAndAuthenticate": "Select your git provider and authenticate",
     "oauthProviders": "oAuth Providers",
     "gitProtocols": "Git Protocols",
@@ -859,5 +859,20 @@
     "@@x-EXPANDED_COMMITS": "",
     "recentCommits": "Recent Commits",
     "branchManagement": "Branch Management",
-    "providerTools": "Provider Tools"
+    "providerTools": "Provider Tools",
+
+    "@@x-BOTTOM_NAV": "",
+    "tabChat": "Chat",
+    "tabFiles": "Files",
+    "chatComingSoon": "Chat features coming soon",
+    "chatComingSoonSubtitle": "Interact with your files using Claude Code",
+    "noRepoSetup": "Set up a repository first",
+
+    "@@x-AI": "",
+    "enableAiFeatures": "Enable AI Features",
+    "hideAiFeatures": "Hide AI Features",
+    "hideAiFeaturesConfirmTitle": "Hide AI Features?",
+    "hideAiFeaturesConfirmMsg": "This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.",
+    "aiSetupTitle": "Set Up AI",
+    "aiSetupMsg": "Configure an AI provider to use this feature. Go to AI settings?"
 }

@@ -138,15 +138,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restorePurchase => '恢复购买';
 
   @override
-  String get verifyGhSponsorTitle => '验证 GitHub 赞助身份';
-
-  @override
-  String get verifyGhSponsorMsg => '如果你是 GitHub 赞助者，可以免费使用高级功能。请使用 GitHub 登录以验证你的赞助状态。';
-
-  @override
-  String get verifyGhSponsorNote => '注意：新的赞助关系可能需要最多 1 天才能在应用中生效。';
-
-  @override
   String get premiumStoreOnlyBanner => '仅限商店版本 — 请前往 App Store 或 Play Store 获取';
 
   @override
@@ -861,7 +852,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduledSyncDescription => '定期在后台自动同步';
 
   @override
-  String get sync => '同步';
+  String get tabHome => 'Home';
 
   @override
   String get iosDefaultSyncRate => '当 iOS 允许时';
@@ -937,6 +928,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get useForWidgetManualSync => '用于手动同步小部件';
+
+  @override
+  String get remoteAuthMismatchTitle => 'Auth won\'t work with this remote';
+
+  @override
+  String get remoteAuthMismatchUsesSsh => 'This remote uses SSH — tap to switch';
+
+  @override
+  String get remoteAuthMismatchUsesHttps => 'This remote uses HTTPS or OAuth — tap to switch';
 
   @override
   String get selectYourGitProviderAndAuthenticate => '选择你的 Git 提供商并进行认证';
@@ -2253,6 +2253,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get providerTools => 'Provider Tools';
+
+  @override
+  String get tabChat => 'Chat';
+
+  @override
+  String get tabFiles => 'Files';
+
+  @override
+  String get chatComingSoon => 'Chat features coming soon';
+
+  @override
+  String get chatComingSoonSubtitle => 'Interact with your files using Claude Code';
+
+  @override
+  String get noRepoSetup => 'Set up a repository first';
+
+  @override
+  String get enableAiFeatures => 'Enable AI Features';
+
+  @override
+  String get hideAiFeatures => 'Hide AI Features';
+
+  @override
+  String get hideAiFeaturesConfirmTitle => 'Hide AI Features?';
+
+  @override
+  String get hideAiFeaturesConfirmMsg =>
+      'This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.';
+
+  @override
+  String get aiSetupTitle => 'Set Up AI';
+
+  @override
+  String get aiSetupMsg => 'Configure an AI provider to use this feature. Go to AI settings?';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

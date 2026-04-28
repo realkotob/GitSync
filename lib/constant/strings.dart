@@ -69,6 +69,8 @@ const String largeFile = "Singular files larger than 50MB not supported!";
 const String directoryNotEmpty = "Folder not empty. Please choose another.";
 const String inaccessibleDirectoryMessage =
     "This folder is inaccessible. Try creating a new folder in the same location with a different name and selecting that instead.";
+const String noFolderAccessError =
+    "No folder access! On iOS, try re-selecting the directory in settings. If the issue persists, remove and re-add the repository.";
 const String autoRebaseFailedException =
     "Remote is further ahead than local and we could not automatically rebase for you, as it would cause non fast-forward update.";
 const String nonExistingException = "Remote ref didn't exist.";
@@ -79,6 +81,22 @@ const String remoteChangedException =
     "Remote ref update was rejected, because old object id on remote repository wasn't the same as defined expected old object.";
 const String mergingExceptionMessage = "MERGING";
 const String repositoryNotFound = "Repository not found!";
+const String sslErrorPrefix = "SSL error";
+const String sslErrorMessage = "A network/SSL error occurred. Check your internet connection and try again.";
+const String pemPreambleInvalidData = "PEM preamble contains invalid data";
+const String pemPreambleError = "Your SSH key file appears corrupted. Please re-enter or regenerate your SSH key in the repository settings.";
+const String cannotPushNonFastforwardable = "cannot push non-fastforwardable reference";
+const String cannotPushNonFastforwardableError =
+    "The remote has changes not present locally. Use Download & Overwrite or Upload & Overwrite to resolve.";
+const String uncommittedChangeOverwrittenByMerge = "uncommitted change would be overwritten by merge";
+const String uncommittedChangesOverwrittenByMerge = "uncommitted changes would be overwritten by merge";
+const String uncommittedChangeOverwrittenError =
+    "Local uncommitted changes conflict with incoming changes. Commit or discard your local changes and sync again, or use Download & Overwrite / Upload & Overwrite to resolve.";
+const String failedToReadIndex = "failed to read index";
+const String failedToReadIndexError = "The repository index is corrupted or missing. Use Auto-Fix to rebuild it.";
+const String errorLoadingKnownHosts = "error loading known_hosts";
+const String errorLoadingKnownHostsError =
+    "Could not load SSH known hosts file. Try toggling \"Disable SSL Verification\" in repository settings, or re-enter your SSH credentials.";
 
 // Sync Dialogs
 const String resolvingMerge = "Resolving merge…";
@@ -106,7 +124,8 @@ const String discordLink = "https://discord.gg/cgvjdDyzzB";
 const String premiumDocsLink = "https://gitsync.viscouspotenti.al/wiki/premium";
 const String scheduledSyncDocsLink = "https://gitsync.viscouspotenti.al/wiki/sync-options/background/scheduled-sync";
 const String autoSyncDocsLink = "https://gitsync.viscouspotenti.al/wiki/sync-options/background/app-based";
-const String iosAppSyncDocsLink = "https://gitsync.viscouspotenti.al/wiki/sync-options/background/app-based#sync-on-other-app-openclose-via-shortcuts";
+const String iosAppSyncDocsLink =
+    "https://gitsync.viscouspotenti.al/wiki/sync-options/background/app-based#sync-on-other-app-openclose-via-shortcuts";
 const String tileSyncDocsLink = "https://gitsync.viscouspotenti.al/wiki/sync-options/background/quick-tile";
 const String quickSyncDocsLink = "https://gitsync.viscouspotenti.al/wiki/sync-options/background/quick-sync";
 const String enhancedShcheduledSyncDocsLink =

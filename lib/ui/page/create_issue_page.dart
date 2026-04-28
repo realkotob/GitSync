@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:GitSync/ui/component/markdown_config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,11 +10,14 @@ import 'package:GitSync/api/manager/auth/git_provider_manager.dart';
 import 'package:GitSync/constant/dimens.dart';
 import 'package:GitSync/constant/strings.dart';
 import 'package:GitSync/global.dart';
+import 'package:GitSync/providers/riverpod_providers.dart';
+import 'package:GitSync/ui/component/ai_wand_field.dart';
+import 'package:GitSync/api/ai_completion_service.dart';
 import 'package:GitSync/type/git_provider.dart';
 import 'package:GitSync/type/issue_template.dart';
 import 'package:GitSync/ui/component/post_footer_indicator.dart';
 
-class CreateIssuePage extends StatefulWidget {
+class CreateIssuePage extends ConsumerStatefulWidget {
   final GitProvider gitProvider;
   final String remoteWebUrl;
   final String accessToken;
@@ -22,10 +26,10 @@ class CreateIssuePage extends StatefulWidget {
   const CreateIssuePage({super.key, required this.gitProvider, required this.remoteWebUrl, required this.accessToken, required this.githubAppOauth});
 
   @override
-  State<CreateIssuePage> createState() => _CreateIssuePageState();
+  ConsumerState<CreateIssuePage> createState() => _CreateIssuePageState();
 }
 
-class _CreateIssuePageState extends State<CreateIssuePage> {
+class _CreateIssuePageState extends ConsumerState<CreateIssuePage> {
   List<IssueTemplate> _templates = [];
   IssueTemplate? _selectedTemplate;
   bool _loadingTemplates = true;
@@ -106,6 +110,15 @@ class _CreateIssuePageState extends State<CreateIssuePage> {
     });
   }
 
+  bool _hasUserContent() {
+    final title = _titleController.text.trim();
+    final body = _bodyController.text.trim();
+    if (_selectedTemplate == null) {
+      return title.isNotEmpty || body.isNotEmpty;
+    }
+    return title != (_selectedTemplate?.title ?? '').trim() || body != (_selectedTemplate?.body ?? '').trim();
+  }
+
   bool get _canSubmit {
     if (_titleController.text.trim().isEmpty) return false;
     final template = _selectedTemplate;
@@ -165,7 +178,8 @@ class _CreateIssuePageState extends State<CreateIssuePage> {
       assignees = template?.assignees.isNotEmpty == true ? template!.assignees : null;
     }
 
-    body = await uiSettingsManager.applyPostFooter(body);
+    final footer = ref.read(postFooterProvider).valueOrNull ?? '';
+    if (footer.trim().isNotEmpty) body = '$body\n$footer';
     final result = await manager.createIssue(widget.accessToken, owner, repo, title, body, labels: labels, assignees: assignees);
     if (!mounted) return;
 
@@ -256,33 +270,62 @@ class _CreateIssuePageState extends State<CreateIssuePage> {
       padding: EdgeInsets.symmetric(horizontal: spaceMD),
       children: [
         // Title field
-        TextField(
-          contextMenuBuilder: globalContextMenuBuilder,
-          controller: _titleController,
-          maxLines: 1,
-          style: TextStyle(
-            color: colours.primaryLight,
-            fontWeight: FontWeight.bold,
-            decoration: TextDecoration.none,
-            decorationThickness: 0,
-            fontSize: textMD,
-          ),
-          decoration: InputDecoration(
-            fillColor: colours.secondaryDark,
-            filled: true,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
-            isCollapsed: true,
-            label: Text(
-              t.createIssueTitle.toUpperCase(),
-              style: TextStyle(color: colours.secondaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
+        AiWandField(
+          enabled: _hasUserContent(),
+          onPressed: () async {
+            final buffer = StringBuffer('Current title: ${_titleController.text}\nCurrent body:\n${_bodyController.text}\n');
+            if (_selectedTemplate != null) {
+              buffer.writeln('\nTemplate: ${_selectedTemplate!.name}');
+              if (_selectedTemplate!.fields.isNotEmpty) {
+                buffer.writeln('Sections:');
+                for (final field in _selectedTemplate!.fields) {
+                  buffer.writeln('- ${field.label}${field.description != null ? ": ${field.description}" : ""}');
+                }
+              }
+            }
+            final result = await aiComplete(
+              systemPrompt:
+                  "Enhance this issue title and description. The first line is the title (under 70 chars), then a blank line, then the markdown description. Follow the template structure if provided. Maintain the user's original intent.",
+              userPrompt: buffer.toString(),
+            );
+            if (result != null) {
+              final lines = result.trim().split('\n');
+              _titleController.text = lines.first.trim();
+              final bodyStart = lines.indexWhere((l) => l.trim().isNotEmpty, 1);
+              if (bodyStart != -1) {
+                _bodyController.text = lines.sublist(bodyStart).join('\n').trim();
+              }
+              setState(() {});
+            }
+          },
+          child: TextField(
+            contextMenuBuilder: globalContextMenuBuilder,
+            controller: _titleController,
+            maxLines: 1,
+            style: TextStyle(
+              color: colours.primaryLight,
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.none,
+              decorationThickness: 0,
+              fontSize: textMD,
             ),
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            hintText: t.createIssueTitleHint,
-            hintStyle: TextStyle(color: colours.tertiaryLight, fontSize: textMD, fontWeight: FontWeight.normal),
-            contentPadding: const EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM),
-            isDense: true,
+            decoration: InputDecoration(
+              fillColor: colours.secondaryDark,
+              filled: true,
+              border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
+              isCollapsed: true,
+              label: Text(
+                t.createIssueTitle.toUpperCase(),
+                style: TextStyle(color: colours.secondaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
+              ),
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              hintText: t.createIssueTitleHint,
+              hintStyle: TextStyle(color: colours.tertiaryLight, fontSize: textMD, fontWeight: FontWeight.normal),
+              contentPadding: const EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM),
+              isDense: true,
+            ),
+            onChanged: (_) => setState(() {}),
           ),
-          onChanged: (_) => setState(() {}),
         ),
 
         SizedBox(height: spaceMD),
