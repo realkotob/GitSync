@@ -23,16 +23,18 @@ jobs:
           haskell: true
           large-packages: true
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', 'rust/.cargo/config.toml') }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.88.0
 
       - name: Create Secrets file
         run: |
@@ -48,23 +50,25 @@ jobs:
           version: 3.35.2
 
       - name: Set Up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
-          distribution: "zulu"
-          java-version: "17"
+          distribution: "temurin"
+          java-version: "21"
           cache: "gradle"
 
       - name: Install flutter_rust_bridge_codegen
-        run: cargo install flutter_rust_bridge_codegen
+        run: cargo install flutter_rust_bridge_codegen --version 2.12.0 --locked
 
       - name: Install cargo-expand
-        run: cargo install cargo-expand
+        run: cargo install cargo-expand --version 1.0.121 --locked
 
       - name: Get Packages
         run: flutter pub get
 
       - name: Generate Rust
-        run: flutter_rust_bridge_codegen generate
+        run: |
+          flutter_rust_bridge_codegen generate
+          git checkout HEAD -- rust/src/frb_generated.rs
 
       - uses: nttld/setup-ndk@v1
         with:
@@ -73,7 +77,14 @@ jobs:
       - uses: SimonMarquis/android-accept-licenses@v1
 
       - name: Build Release APKs
-        run: flutter build apk --release --split-per-abi
+        run: |
+          export CARGO_ENCODED_RUSTFLAGS=$(printf '%s\x1f%s\x1f%s' "--remap-path-prefix=$HOME/.cargo/registry/src=/cargo/registry/src" "--remap-path-prefix=$GITHUB_WORKSPACE=." "-Ccodegen-units=1")
+          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
+          # Build each ABI in its own gradle invocation so the gradle task graph
+          # matches F-Droid (which builds one ABI per metadata entry job).
+          flutter build apk --release --split-per-abi --target-platform="android-arm"
+          flutter build apk --release --split-per-abi --target-platform="android-arm64"
+          flutter build apk --release --split-per-abi --target-platform="android-x64"
 
       - name: Sign App
         id: sign_app
@@ -96,7 +107,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Upload Release Build to Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-artifacts
           path: |
@@ -111,7 +122,7 @@ jobs:
 
       - name: Build Changelog
         id: changelog
-        uses: ardalanamini/auto-changelog@v3
+        uses: ardalanamini/auto-changelog@v4
         with:
           mention-authors: false
           mention-new-contributors: false
@@ -144,7 +155,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: ncipollo/release-action@v1.13.0
+        uses: ncipollo/release-action@v1.21.0
         with:
           artifacts: "${{ steps.signed_file_path_0.outputs.value }},${{ steps.signed_file_path_1.outputs.value }},${{ steps.signed_file_path_2.outputs.value }}"
           body: ${{ steps.changelog.outputs.changelog }}

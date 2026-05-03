@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
@@ -97,6 +98,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
+    Locale('ar'),
     Locale('en'),
     Locale('es'),
     Locale('fr'),
@@ -363,24 +365,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restore Purchase'**
   String get restorePurchase;
-
-  /// No description provided for @verifyGhSponsorTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify GitHub Sponsorship'**
-  String get verifyGhSponsorTitle;
-
-  /// No description provided for @verifyGhSponsorMsg.
-  ///
-  /// In en, this message translates to:
-  /// **'If you are a GitHub Sponsor, you can access premium features for free. Authenticate with GitHub so we can verify your sponsor status.'**
-  String get verifyGhSponsorMsg;
-
-  /// No description provided for @verifyGhSponsorNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Note: new sponsorships may take up to 1 day to become available in the app.'**
-  String get verifyGhSponsorNote;
 
   /// No description provided for @premiumStoreOnlyBanner.
   ///
@@ -1810,11 +1794,11 @@ abstract class AppLocalizations {
   /// **'Automatically syncs periodically in the background'**
   String get scheduledSyncDescription;
 
-  /// No description provided for @sync.
+  /// No description provided for @tabHome.
   ///
   /// In en, this message translates to:
-  /// **'Sync'**
-  String get sync;
+  /// **'Home'**
+  String get tabHome;
 
   /// No description provided for @iosDefaultSyncRate.
   ///
@@ -1965,6 +1949,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use for Manual Sync Widget'**
   String get useForWidgetManualSync;
+
+  /// No description provided for @remoteAuthMismatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auth won\'t work with this remote'**
+  String get remoteAuthMismatchTitle;
+
+  /// No description provided for @remoteAuthMismatchUsesSsh.
+  ///
+  /// In en, this message translates to:
+  /// **'This remote uses SSH — tap to switch'**
+  String get remoteAuthMismatchUsesSsh;
+
+  /// No description provided for @remoteAuthMismatchUsesHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'This remote uses HTTPS or OAuth — tap to switch'**
+  String get remoteAuthMismatchUsesHttps;
 
   /// No description provided for @selectYourGitProviderAndAuthenticate.
   ///
@@ -3868,6 +3870,24 @@ abstract class AppLocalizations {
   /// **'Network unavailable!\nGitSync will retry when reconnected'**
   String get networkUnavailableRetry;
 
+  /// No description provided for @networkStallManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor network — please try again'**
+  String get networkStallManual;
+
+  /// No description provided for @networkUnavailableManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Network unavailable — please try again'**
+  String get networkUnavailableManual;
+
+  /// No description provided for @networkRetryComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued operation completed'**
+  String get networkRetryComplete;
+
   /// No description provided for @failedToResolveAddressMessage.
   ///
   /// In en, this message translates to:
@@ -4581,6 +4601,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Provider Tools'**
   String get providerTools;
+
+  /// No description provided for @tabChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get tabChat;
+
+  /// No description provided for @tabFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get tabFiles;
+
+  /// No description provided for @chatComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat features coming soon'**
+  String get chatComingSoon;
+
+  /// No description provided for @chatComingSoonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Interact with your files using Claude Code'**
+  String get chatComingSoonSubtitle;
+
+  /// No description provided for @noRepoSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up a repository first'**
+  String get noRepoSetup;
+
+  /// No description provided for @enableAiFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI Features'**
+  String get enableAiFeatures;
+
+  /// No description provided for @hideAiFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide AI Features'**
+  String get hideAiFeatures;
+
+  /// No description provided for @hideAiFeaturesConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide AI Features?'**
+  String get hideAiFeaturesConfirmTitle;
+
+  /// No description provided for @hideAiFeaturesConfirmMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.'**
+  String get hideAiFeaturesConfirmMsg;
+
+  /// No description provided for @aiSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up AI'**
+  String get aiSetupTitle;
+
+  /// No description provided for @aiSetupMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure an AI provider to use this feature. Go to AI settings?'**
+  String get aiSetupMsg;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -4592,7 +4678,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['de', 'en', 'es', 'fr', 'ja', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'ar', 'en', 'es', 'fr', 'ja', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -4615,6 +4701,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'de':
       return AppLocalizationsDe();
+    case 'ar':
+      return AppLocalizationsAr();
     case 'en':
       return AppLocalizationsEn();
     case 'es':

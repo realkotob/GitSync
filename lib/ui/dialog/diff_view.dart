@@ -32,7 +32,7 @@ Future<void> showDialog(
 
   if (diffReferences.$2 == null) return;
 
-  final dirPath = await uiSettingsManager.gitDirPath?.$2;
+  final dirPath = (await uiSettingsManager.getGitDirPath())?.$2;
 
   Future<List<MapEntry<String, String>>> getDiffParts(GitManagerRs.Diff? diffSnapshotData) async {
     final diffFiles =
@@ -65,34 +65,40 @@ Future<void> showDialog(
     diffNotifier.value = await (diffReferences.$1 == null
         ? runGitOperation(
             LogType.FileDiff,
-            (event) => event == null
-                ? null
-                : GitManagerRs.Diff(
-                    insertions: event["insertions"],
-                    deletions: event["deletions"],
-                    diffParts: event["diffParts"].map<String, Map<String, String>>(
-                      (key, value) => MapEntry<String, Map<String, String>>(
-                        "$key",
-                        value.map<String, String>((valueKey, valueValue) => MapEntry<String, String>("$valueKey", "$valueValue")),
+            (event) {
+              final result = event?["result"];
+              return result == null
+                  ? null
+                  : GitManagerRs.Diff(
+                      insertions: result["insertions"],
+                      deletions: result["deletions"],
+                      diffParts: result["diffParts"].map<String, Map<String, String>>(
+                        (key, value) => MapEntry<String, Map<String, String>>(
+                          "$key",
+                          value.map<String, String>((valueKey, valueValue) => MapEntry<String, String>("$valueKey", "$valueValue")),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+            },
             {"filePath": diffReferences.$2!},
           )
         : runGitOperation(
             LogType.CommitDiff,
-            (event) => event == null
-                ? null
-                : GitManagerRs.Diff(
-                    insertions: event["insertions"],
-                    deletions: event["deletions"],
-                    diffParts: event["diffParts"].map<String, Map<String, String>>(
-                      (key, value) => MapEntry<String, Map<String, String>>(
-                        "$key",
-                        value.map<String, String>((valueKey, valueValue) => MapEntry<String, String>("$valueKey", "$valueValue")),
+            (event) {
+              final result = event?["result"];
+              return result == null
+                  ? null
+                  : GitManagerRs.Diff(
+                      insertions: result["insertions"],
+                      deletions: result["deletions"],
+                      diffParts: result["diffParts"].map<String, Map<String, String>>(
+                        (key, value) => MapEntry<String, Map<String, String>>(
+                          "$key",
+                          value.map<String, String>((valueKey, valueValue) => MapEntry<String, String>("$valueKey", "$valueValue")),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+            },
             {"startRef": diffReferences.$1!, "endRef": diffReferences.$2!},
           ));
 
@@ -355,27 +361,28 @@ Future<void> showDialog(
                         scrollDirection: Axis.horizontal,
                         reverse: true,
                         child: Row(
-                          children: tags.map((tag) => Padding(
-                            padding: EdgeInsets.only(left: spaceXXS),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: colours.tertiaryDark,
-                                borderRadius: BorderRadius.all(cornerRadiusXS),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: spaceXS, vertical: spaceXXXS),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  FaIcon(FontAwesomeIcons.tag, size: textXXS, color: colours.tertiaryLight),
-                                  SizedBox(width: spaceXXXXS),
-                                  Text(
-                                    tag.toUpperCase(),
-                                    style: TextStyle(color: colours.tertiaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
+                          children: tags
+                              .map(
+                                (tag) => Padding(
+                                  padding: EdgeInsets.only(left: spaceXXS),
+                                  child: Container(
+                                    decoration: BoxDecoration(color: colours.tertiaryDark, borderRadius: BorderRadius.all(cornerRadiusXS)),
+                                    padding: EdgeInsets.symmetric(horizontal: spaceXS, vertical: spaceXXXS),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        FaIcon(FontAwesomeIcons.tag, size: textXXS, color: colours.tertiaryLight),
+                                        SizedBox(width: spaceXXXXS),
+                                        Text(
+                                          tag.toUpperCase(),
+                                          style: TextStyle(color: colours.tertiaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          )).toList(),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                     ),

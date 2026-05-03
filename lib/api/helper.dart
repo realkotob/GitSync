@@ -20,6 +20,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:GitSync/api/logger.dart';
@@ -29,6 +30,8 @@ import 'package:ios_document_picker/ios_document_picker.dart';
 import 'package:ios_document_picker/types.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:GitSync/providers/riverpod_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constant/dimens.dart';
 import '../ui/dialog/create_repository.dart' as CreateRepositoryDialog;
@@ -37,6 +40,7 @@ import '../ui/dialog/submodules_found.dart' as SubmodulesFoundDialog;
 import 'package:GitSync/api/manager/auth/git_provider_manager.dart';
 import 'package:GitSync/type/git_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:workmanager/workmanager.dart';
 
 const int mergeConflictNotificationId = 1758;
 Map<String, Timer> debounceTimers = {};
@@ -167,6 +171,67 @@ Future<void> sendMergeConflictNotification() async {
 Future<bool> hasNetworkConnection() async {
   return (await Connectivity().checkConnectivity())[0] != ConnectivityResult.none;
 }
+
+Future<void> showNetworkMessage(String message) async {
+  if (Platform.isIOS) {
+    final active = await Logger.notificationsPlugin.getActiveNotifications();
+    final alreadyShowing = active.any((n) => n.id == networkRetryNotificationId);
+    final darwinDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBanner: true,
+      presentList: true,
+      presentBadge: false,
+      presentSound: !alreadyShowing,
+    );
+    await Logger.notificationsPlugin.show(
+      networkRetryNotificationId,
+      appName,
+      message,
+      NotificationDetails(iOS: darwinDetails),
+    );
+  } else {
+    await Fluttertoast.showToast(msg: message, toastLength: Toast.LENGTH_LONG, gravity: null);
+  }
+}
+
+Future<bool> handleIfNetworkError(Object e, LogType retryKey, Map<String, dynamic>? retryEvent, {bool schedule = true}) async {
+  final msg = e is AnyhowException ? e.message : e.toString();
+  final s = gitSyncService.s;
+  final retryCount = retryEvent?["retryCount"] as int? ?? 0;
+  if (GitManager.isNetworkStallError(msg)) {
+    await showNetworkMessage(schedule ? s.networkStallRetry : s.networkStallManual);
+    if (schedule) scheduleNetworkRetryOp(retryKey, retryEvent, retryCount: retryCount + 1);
+    return true;
+  }
+  if (GitManager.isNetworkUnavailableError(msg) && !await hasNetworkConnection()) {
+    await showNetworkMessage(schedule ? s.networkUnavailableRetry : s.networkUnavailableManual);
+    if (schedule) scheduleNetworkRetryOp(retryKey, retryEvent, retryCount: retryCount + 1);
+    return true;
+  }
+  return false;
+}
+
+void scheduleNetworkRetryOp(LogType operation, Map<String, dynamic>? event, {int retryCount = 0}) {
+  const maxRetries = 5;
+  if (retryCount >= maxRetries) return;
+
+  final repoTag = event?["repoman_repoIndex"] ?? event?["repomanRepoindex"] ?? '';
+  final uniqueName = "$networkRetrySyncKey${operation.name}_$repoTag";
+  final delay = Duration(seconds: 30 * math.pow(2, retryCount).toInt());
+  Workmanager().registerOneOffTask(
+    uniqueName,
+    uniqueName,
+    inputData: {
+      "operation": operation.name,
+      "event": jsonEncode(event ?? const {}),
+      "retryCount": retryCount,
+    },
+    existingWorkPolicy: ExistingWorkPolicy.replace,
+    initialDelay: delay,
+    constraints: Constraints(networkType: NetworkType.connected),
+  );
+}
+
 
 Future<String?> pickDirectory() async {
   try {
@@ -301,12 +366,7 @@ Future<(GitProvider, String, String, bool)?> _getOAuthInfo() async {
   return (provider, credentials.$1, credentials.$2, githubAppOauth);
 }
 
-Future<void> _offerCreateRemoteForDir(
-  BuildContext context,
-  String dirName,
-  (GitProvider, String, String, bool) oAuthInfo,
-  String? dirPath,
-) async {
+Future<void> _offerCreateRemoteForDir(BuildContext context, String dirName, (GitProvider, String, String, bool) oAuthInfo, String? dirPath) async {
   final result = await CreateRepositoryDialog.showDialog(
     context,
     hasOAuth: true,
@@ -339,7 +399,7 @@ Future<void> _performRemoteRepoCreation(
     return;
   }
 
-  await GitManager.addRemote("origin", createResult.$1, dirPath);
+  await GitManager.addRemote("origin", createResult.$1, dirPathOverride: dirPath);
 
   if (initMainBranch && dirPath != null) {
     try {
@@ -377,10 +437,11 @@ Future<void> offerCreateRemoteForExistingRepo(BuildContext context, String dir) 
   }
 }
 
-Future<void> setGitDirPathGetSubmodules(BuildContext context, String dir) async {
+Future<void> setGitDirPathGetSubmodules(BuildContext context, String dir, WidgetRef ref) async {
   await uiSettingsManager.setGitDirPath(dir);
+  ref.invalidate(gitDirPathProvider);
 
-  final dirPath = uiSettingsManager.gitDirPath?.$1;
+  final dirPath = (await uiSettingsManager.getGitDirPath())?.$1;
   if (dirPath != null) {
     await useDirectory(dirPath, (bookmarkPath) async => await uiSettingsManager.setGitDirPath(bookmarkPath, true), (dirPath) async {
       if (await Directory('$dirPath/$obsidianPath').exists() && await Directory('$dirPath/$obsidianGitPath').exists()) {
@@ -503,11 +564,14 @@ Future<T?> useDirectory<T>(
 
   try {
     final bookmarkAndPath = await iosDocumentPickerPlugin.resolveBookmark(bookmark, isDirectory: true);
-    if (bookmarkAndPath == null) return null;
+    if (bookmarkAndPath == null) {
+      Logger.logError(LogType.SelectDirectory, noFolderAccessError, StackTrace.fromString(""));
+      return null;
+    }
     await setBookmarkPath(bookmarkAndPath.$1);
     path = pathSuffix.isEmpty ? bookmarkAndPath.$2 : "${bookmarkAndPath.$2}/$pathSuffix";
   } catch (e) {
-    print(e);
+    Logger.logError(LogType.SelectDirectory, noFolderAccessError, StackTrace.fromString("$e"));
     return null;
   }
 
@@ -517,7 +581,7 @@ Future<T?> useDirectory<T>(
 
   final hasAccess = await iosDocumentPickerPlugin.startAccessing(path);
   if (!hasAccess) {
-    Logger.logError(LogType.SelectDirectory, "No folder access", StackTrace.fromString(""));
+    Logger.logError(LogType.SelectDirectory, noFolderAccessError, StackTrace.fromString(""));
     return null;
   }
 
@@ -667,4 +731,28 @@ extension ValueNotifierExtension on RestorableValue<bool> {
 
     return result;
   }
+}
+
+enum RemoteScheme { https, ssh, unknown }
+
+RemoteScheme detectRemoteScheme(String? url) {
+  if (url == null || url.isEmpty) return RemoteScheme.unknown;
+  final u = url.trim();
+  if (u.startsWith('http://') || u.startsWith('https://')) return RemoteScheme.https;
+  if (u.startsWith('ssh://') || RegExp(r'^[A-Za-z0-9_.-]+@[^:]+:').hasMatch(u)) return RemoteScheme.ssh;
+  return RemoteScheme.unknown;
+}
+
+/// Returns a token describing the direction of a remote-URL/auth mismatch, or
+/// null when the pair is compatible or the URL's scheme isn't detectable.
+/// - 'httpsWithSshAuth': remote URL is http(s), provider is SSH.
+/// - 'sshWithHttpsAuth': remote URL is ssh/git@, provider is a http-based one.
+String? remoteAuthMismatch(String? url, GitProvider? provider) {
+  if (provider == null) return null;
+  final scheme = detectRemoteScheme(url);
+  if (scheme == RemoteScheme.unknown) return null;
+  final providerIsHttps = provider != GitProvider.SSH;
+  if (scheme == RemoteScheme.https && !providerIsHttps) return 'httpsWithSshAuth';
+  if (scheme == RemoteScheme.ssh && providerIsHttps) return 'sshWithHttpsAuth';
+  return null;
 }

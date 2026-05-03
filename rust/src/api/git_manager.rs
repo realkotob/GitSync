@@ -715,6 +715,36 @@ pub fn init(homepath: Option<String>) {
     if let Ok(mut config) = git2::Config::open_default() {
         let _ = config.set_str("safe.directory", "*");
     }
+
+    ensure_empty_known_hosts();
+}
+
+fn ensure_empty_known_hosts() {
+    let Ok(home) = env::var("HOME") else { return };
+    let ssh_dir = PathBuf::from(home).join(".ssh");
+    let known_hosts = ssh_dir.join("known_hosts");
+
+    if !ssh_dir.exists() {
+        if fs::create_dir_all(&ssh_dir).is_err() {
+            return;
+        }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&ssh_dir, fs::Permissions::from_mode(0o700));
+        }
+    }
+
+    if !known_hosts.exists() {
+        if fs::write(&known_hosts, b"").is_err() {
+            return;
+        }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&known_hosts, fs::Permissions::from_mode(0o600));
+        }
+    }
 }
 
 fn get_default_callbacks<'cb>(
@@ -728,10 +758,17 @@ fn get_default_callbacks<'cb>(
     if let (Some(provider), Some(credentials)) = (provider, credentials) {
         callbacks.credentials(move |_url, username_from_url, _allowed_types| {
             if provider == "SSH" {
+                let username = username_from_url.unwrap_or("git");
+                let key = credentials.1.as_str();
+                if !key.contains("-----BEGIN") {
+                    return Err(git2::Error::from_str(
+                        "SSH key is not in PEM format (missing '-----BEGIN' header)",
+                    ));
+                }
                 Cred::ssh_key_from_memory(
-                    username_from_url.unwrap(),
+                    username,
                     None,
-                    credentials.1.as_str(),
+                    key,
                     if credentials.0.is_empty() {
                         None
                     } else {
@@ -2099,7 +2136,14 @@ fn update_submodules_priv(
         let mut submodule_opts = git2::SubmoduleUpdateOptions::new();
         submodule_opts.fetch(fetch_options);
 
-        swl!(submodule.update(true, Some(&mut submodule_opts)))?;
+        if let Err(e) = submodule.update(true, Some(&mut submodule_opts)) {
+            _log(
+                Arc::clone(&log_callback),
+                LogType::PullFromRepo,
+                format!("Skipping submodule '{}': {}", name, e.message()),
+            );
+            continue;
+        }
 
         if let Ok(sub_repo) = submodule.open() {
             swl!(sub_repo.checkout_head(Some(
@@ -2245,9 +2289,15 @@ pub async fn pull_changes(
         "Getting local directory".to_string(),
     );
 
+    let remote_name = repo.remotes()
+        .ok()
+        .and_then(|r| r.get(0).map(|s| s.to_string()))
+        .unwrap_or_else(|| "origin".to_string());
+
     tokio::task::block_in_place(|| {
         pull_changes_priv(
             &repo,
+            &remote_name,
             &provider,
             &credentials,
             commit_signing_credentials,
@@ -2259,6 +2309,7 @@ pub async fn pull_changes(
 
 fn pull_changes_priv(
     repo: &Repository,
+    remote_name: &str,
     provider: &String,
     credentials: &(String, String),
     commit_signing_credentials: Option<(String, String)>,
@@ -2288,8 +2339,9 @@ fn pull_changes_priv(
         .shorthand()
         .ok_or_else(|| git2::Error::from_str("Could not determine branch name")))?;
 
-    let fetch_head = swl!(repo.find_reference("FETCH_HEAD"))?;
-    let fetch_commit = swl!(repo.reference_to_annotated_commit(&fetch_head))?;
+    let tracking_ref_name = format!("refs/remotes/{}/{}", remote_name, remote_branch);
+    let tracking_ref = swl!(repo.find_reference(&tracking_ref_name))?;
+    let fetch_commit = swl!(repo.reference_to_annotated_commit(&tracking_ref))?;
     let analysis = swl!(repo.merge_analysis(&[&fetch_commit]))?;
 
     if analysis.0.is_up_to_date() {
@@ -2319,8 +2371,8 @@ fn pull_changes_priv(
                     LogType::PullFromRepo,
                     "OK fast forward".to_string(),
                 );
-                if get_staged_file_paths_priv(&repo, &log_callback).is_empty()
-                    && get_uncommitted_file_paths_priv(&repo, false, &log_callback).is_empty()
+                if get_staged_file_paths_priv(&repo, &log_callback)?.is_empty()
+                    && get_uncommitted_file_paths_priv(&repo, false, &log_callback)?.is_empty()
                 {
                     swl!(fast_forward(&repo, &mut r, &fetch_commit, &log_callback))?;
                     swl!(update_submodules_priv(
@@ -2394,7 +2446,9 @@ fn pull_changes_priv(
                 "Merge conflicts detected".to_string(),
             );
 
-            return Ok(Some(false));
+            return Err(git2::Error::from_str(
+                "Merge conflicts detected during pull. Push your local changes first to trigger the merge conflict UI, then resolve conflicts from there.",
+            ));
         }
         let result_tree = swl!(repo.find_tree(swl!(idx.write_tree_to(&repo))?))?;
         let msg = format!("Merge: {} into {}", fetch_commit.id(), head_commit.id());
@@ -2447,18 +2501,20 @@ pub async fn download_changes(
         &log_callback
     ))?;
 
-    if tokio::task::block_in_place(|| {
+    match tokio::task::block_in_place(|| {
         pull_changes_priv(
             &repo,
+            &remote,
             &provider,
             &credentials,
             commit_signing_credentials,
             sync_callback,
             &log_callback,
         )
-    }) == Ok(Some(false))
-    {
-        return Ok(Some(false));
+    }) {
+        Ok(Some(false)) => return Ok(Some(false)),
+        Err(e) => return Err(e),
+        _ => {}
     }
 
     Ok(Some(true))
@@ -2784,10 +2840,15 @@ pub async fn stage_file_paths(
     }
 
     for path in &paths {
+        let _ = index.conflict_remove(Path::new(path));
+    }
+
+    for path in &paths {
         if let Ok(mut sm) = repo.find_submodule(path) {
-            let sm_repo = swl!(sm.open())?;
-            swl!(sm_repo.index()?.write())?;
-            swl!(sm.add_to_index(false))?;
+            if let Ok(sm_repo) = sm.open() {
+                swl!(sm_repo.index()?.write())?;
+                swl!(sm.add_to_index(false))?;
+            }
         }
     }
 
@@ -2874,9 +2935,13 @@ pub async fn get_recommended_action(
         let mut found = false;
 
         if let Ok(tracking_ref) = repo.find_reference(&tracking_ref_name) {
+            let target_ref_name = format!("refs/heads/{}", &branch_name);
             for r in remote_refs {
-                if tracking_ref.target() == Some(r.oid()) {
+                if r.name() == target_ref_name.as_str()
+                    && tracking_ref.target() == Some(r.oid())
+                {
                     found = true;
+                    break;
                 }
             }
         } else {
@@ -3021,11 +3086,37 @@ pub async fn commit_changes(
     );
 
     let mut index = swl!(repo.index())?;
-    let updated_tree_oid = if !index.has_conflicts() {
-        Some(swl!(index.write_tree())?)
-    } else {
-        None
-    };
+    if index.has_conflicts() {
+        let unmerged: Vec<String> = index
+            .conflicts()
+            .ok()
+            .map(|iter| {
+                iter.filter_map(|c| c.ok())
+                    .filter_map(|c| {
+                        c.our
+                            .or(c.their)
+                            .or(c.ancestor)
+                            .map(|e| String::from_utf8_lossy(&e.path).into_owned())
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        _log(
+            Arc::clone(&log_callback),
+            LogType::PushToRepo,
+            format!("Index has unresolved conflicts, cannot commit: {:?}", unmerged),
+        );
+        let suffix = if unmerged.is_empty() {
+            String::new()
+        } else {
+            format!(" Unmerged paths: {}", unmerged.join(", "))
+        };
+        return Err(git2::Error::from_str(&format!(
+            "Cannot commit: unresolved merge conflicts exist. Please resolve conflicts first.{}",
+            suffix
+        )));
+    }
+    let updated_tree_oid = swl!(index.write_tree())?;
 
     _log(
         Arc::clone(&log_callback),
@@ -3047,8 +3138,7 @@ pub async fn commit_changes(
         None => vec![],
     };
 
-    let tree_oid = updated_tree_oid.unwrap_or_else(|| index.write_tree_to(&repo).unwrap());
-    let tree = swl!(repo.find_tree(tree_oid))?;
+    let tree = swl!(repo.find_tree(updated_tree_oid))?;
 
     swl!(commit(
         &repo,
@@ -3094,9 +3184,9 @@ pub async fn upload_changes(
     );
 
     let uncommitted_file_paths: Vec<(String, i32)> =
-        get_staged_file_paths_priv(&repo, &log_callback)
+        get_staged_file_paths_priv(&repo, &log_callback)?
             .into_iter()
-            .chain(get_uncommitted_file_paths_priv(&repo, true, &log_callback))
+            .chain(get_uncommitted_file_paths_priv(&repo, true, &log_callback)?)
             .collect();
 
     let mut index = swl!(repo.index())?;
@@ -3142,24 +3232,31 @@ pub async fn upload_changes(
 
     for path in &paths {
         if let Ok(mut sm) = repo.find_submodule(path) {
-            let sm_repo = swl!(sm.open())?;
-            swl!(sm_repo.index()?.write())?;
-            swl!(sm.add_to_index(false))?;
+            if let Ok(sm_repo) = sm.open() {
+                swl!(sm_repo.index()?.write())?;
+                swl!(sm.add_to_index(false))?;
+            }
         }
     }
 
     swl!(index.write())?;
 
-    let updated_tree_oid = if !index.has_conflicts() {
-        Some(swl!(index.write_tree())?)
-    } else {
-        None
-    };
+    if index.has_conflicts() {
+        _log(
+            Arc::clone(&log_callback),
+            LogType::PushToRepo,
+            "Index has unresolved conflicts, skipping commit".to_string(),
+        );
+        flutter_rust_bridge::spawn(async move {
+            merge_conflict_callback().await;
+        });
+        return Ok(Some(false));
+    }
+    let updated_tree_oid = swl!(index.write_tree())?;
 
-    let should_commit = match (initial_tree_oid, updated_tree_oid) {
-        (Some(old), Some(new)) => old != new,
-        (None, None) => true,
-        _ => true,
+    let should_commit = match initial_tree_oid {
+        Some(old) => old != updated_tree_oid,
+        None => true,
     };
 
     // Only commit if the index has actually changed
@@ -3184,8 +3281,7 @@ pub async fn upload_changes(
             None => vec![],
         };
 
-        let tree_oid = updated_tree_oid.unwrap_or_else(|| index.write_tree_to(&repo).unwrap());
-        let tree = swl!(repo.find_tree(tree_oid))?;
+        let tree = swl!(repo.find_tree(updated_tree_oid))?;
 
         swl!(commit(
             &repo,
@@ -3478,8 +3574,8 @@ pub async fn upload_and_overwrite(
         swl!(rebase.abort())?;
     }
 
-    if !get_staged_file_paths_priv(&repo, &log_callback).is_empty()
-        || !get_uncommitted_file_paths_priv(&repo, true, &log_callback).is_empty()
+    if !get_staged_file_paths_priv(&repo, &log_callback)?.is_empty()
+        || !get_uncommitted_file_paths_priv(&repo, true, &log_callback)?.is_empty()
     {
         let mut index = swl!(repo.index())?;
 
@@ -3662,12 +3758,6 @@ pub async fn download_and_overwrite(
         "Force fetching changes".to_string(),
     );
 
-    swl!(remote.fetch::<&str>(&[], Some(&mut fetch_options), None))?;
-
-    let fetch_commit = swl!(repo
-        .find_reference("FETCH_HEAD")
-        .and_then(|r| repo.reference_to_annotated_commit(&r)))?;
-
     let git_dir = repo.path();
     let rebase_head_path = git_dir.join("rebase-merge").join("head-name");
     let refname = if rebase_head_path.exists() {
@@ -3724,6 +3814,14 @@ pub async fn download_and_overwrite(
 
         format!("refs/heads/{}", branch_name)
     };
+
+    swl!(remote.fetch::<&str>(&[], Some(&mut fetch_options), None))?;
+
+    let branch = refname.strip_prefix("refs/heads/").unwrap_or("master");
+    let tracking_ref_name = format!("refs/remotes/{}/{}", remote_name, branch);
+    let fetch_commit = swl!(repo
+        .find_reference(&tracking_ref_name)
+        .and_then(|r| repo.reference_to_annotated_commit(&r)))?;
 
     let mut reference = swl!(repo.find_reference(&refname))?;
     swl!(reference.set_target(fetch_commit.id(), "force pull"))?;
@@ -3788,7 +3886,7 @@ pub async fn discard_changes(
 pub async fn get_conflicting(
     path_string: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<(String, ConflictType)> {
+) -> Result<Vec<(String, ConflictType)>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -3796,15 +3894,12 @@ pub async fn get_conflicting(
         LogType::ConflictingFiles,
         "Getting local directory".to_string(),
     );
-    let repo = match Repository::open(path_string) {
-        Ok(repo) => repo,
-        Err(_) => return Vec::new(),
-    };
+    let repo = swl!(Repository::open(path_string))?;
 
-    let index = repo.index().unwrap();
+    let index = swl!(repo.index())?;
     let mut conflicts = Vec::new();
 
-    index.conflicts().unwrap().for_each(|conflict| {
+    swl!(index.conflicts())?.for_each(|conflict| {
         if let Ok(conflict) = conflict {
             if let Some(ours) = conflict.our {
                 conflicts.push((
@@ -3821,13 +3916,13 @@ pub async fn get_conflicting(
         }
     });
 
-    conflicts
+    Ok(conflicts)
 }
 
 pub async fn get_staged_file_paths(
     path_string: &str,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -3835,10 +3930,7 @@ pub async fn get_staged_file_paths(
         LogType::StagedFiles,
         "Getting local directory".to_string(),
     );
-    let repo = match Repository::open(path_string) {
-        Ok(repo) => repo,
-        Err(_) => return Vec::new(),
-    };
+    let repo = swl!(Repository::open(path_string))?;
 
     get_staged_file_paths_priv(&repo, &log_callback)
 }
@@ -3846,7 +3938,7 @@ pub async fn get_staged_file_paths(
 fn get_staged_file_paths_priv(
     repo: &Repository,
     log_callback: &Arc<impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static>,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     _log(
         Arc::clone(&log_callback),
         LogType::StagedFiles,
@@ -3858,7 +3950,7 @@ fn get_staged_file_paths_priv(
     opts.include_ignored(false);
     opts.update_index(true);
     opts.show(git2::StatusShow::Index);
-    let statuses = repo.statuses(Some(&mut opts)).unwrap();
+    let statuses = swl!(repo.statuses(Some(&mut opts)))?;
 
     let mut file_paths = Vec::new();
 
@@ -3895,13 +3987,13 @@ fn get_staged_file_paths_priv(
         }
     }
 
-    file_paths
+    Ok(file_paths)
 }
 
 pub async fn get_uncommitted_file_paths(
     path_string: &str,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -3909,10 +4001,7 @@ pub async fn get_uncommitted_file_paths(
         LogType::UncommittedFiles,
         "Getting local directory".to_string(),
     );
-    let repo = match Repository::open(path_string) {
-        Ok(repo) => repo,
-        Err(_) => return Vec::new(),
-    };
+    let repo = swl!(Repository::open(path_string))?;
 
     _log(
         Arc::clone(&log_callback),
@@ -3927,13 +4016,13 @@ fn get_uncommitted_file_paths_priv(
     repo: &Repository,
     include_untracked: bool,
     log_callback: &Arc<impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static>,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     let mut opts = StatusOptions::new();
     opts.include_untracked(include_untracked);
     opts.include_ignored(false);
     opts.update_index(true);
     opts.show(git2::StatusShow::Workdir);
-    let statuses = repo.statuses(Some(&mut opts)).unwrap();
+    let statuses = swl!(repo.statuses(Some(&mut opts)))?;
 
     let mut file_paths = Vec::new();
 
@@ -3977,7 +4066,7 @@ fn get_uncommitted_file_paths_priv(
         }
     }
 
-    file_paths
+    Ok(file_paths)
 }
 
 fn has_local_changes_priv(
@@ -4112,10 +4201,10 @@ pub async fn generate_ssh_key(
 pub async fn get_branch_name(
     path_string: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Option<String> {
+) -> Result<Option<String>, git2::Error> {
     let log_callback = Arc::new(log);
 
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     let branch_name = get_branch_name_priv(&repo);
 
     if branch_name == None {
@@ -4126,7 +4215,7 @@ pub async fn get_branch_name(
         );
     }
 
-    return branch_name;
+    Ok(branch_name)
 }
 
 fn get_branch_name_priv(repo: &Repository) -> Option<String> {
@@ -4152,19 +4241,19 @@ pub async fn get_branch_names(
     path_string: &String,
     remote: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<String> {
+) -> Result<Vec<String>, git2::Error> {
     let log_callback = Arc::new(log);
     _log(
         Arc::clone(&log_callback),
         LogType::BranchNames,
         "Getting local directory".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
 
     let mut local_set = std::collections::HashSet::new();
     let mut remote_set = std::collections::HashSet::new();
 
-    let local_branches = repo.branches(Some(BranchType::Local)).unwrap();
+    let local_branches = swl!(repo.branches(Some(BranchType::Local)))?;
     for branch_result in local_branches {
         if let Ok((branch, _)) = branch_result {
             if let Some(name) = branch.name().ok().flatten() {
@@ -4173,7 +4262,7 @@ pub async fn get_branch_names(
         }
     }
 
-    let remote_branches = repo.branches(Some(BranchType::Remote)).unwrap();
+    let remote_branches = swl!(repo.branches(Some(BranchType::Remote)))?;
     for branch_result in remote_branches {
         if let Ok((branch, _)) = branch_result {
             if let Some(name) = branch.name().ok().flatten() {
@@ -4199,7 +4288,7 @@ pub async fn get_branch_names(
         all_names.insert(name.clone());
     }
 
-    all_names
+    Ok(all_names
         .into_iter()
         .map(|name| {
             let is_local = local_set.contains(&name);
@@ -4213,7 +4302,7 @@ pub async fn get_branch_names(
             };
             format!("{}======={}", name, location)
         })
-        .collect()
+        .collect())
 }
 
 pub async fn set_remote_url(
@@ -4229,7 +4318,7 @@ pub async fn set_remote_url(
         LogType::SetRemoteUrl,
         "Getting local directory".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     repo.remote_set_url(&remote_name, &new_remote_url)?;
 
     Ok(())
@@ -4238,7 +4327,7 @@ pub async fn set_remote_url(
 pub async fn list_remotes(
     path_string: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<String> {
+) -> Result<Vec<String>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -4246,12 +4335,12 @@ pub async fn list_remotes(
         LogType::ListRemotes,
         "Listing remotes".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
-    let remotes = repo.remotes().unwrap();
-    remotes
+    let repo = swl!(Repository::open(path_string))?;
+    let remotes = swl!(repo.remotes())?;
+    Ok(remotes
         .iter()
         .filter_map(|r| r.map(|s| s.to_string()))
-        .collect()
+        .collect())
 }
 
 pub async fn init_repository(
@@ -4300,7 +4389,7 @@ pub async fn add_remote(
         LogType::AddRemote,
         "Adding remote".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     repo.remote(&remote_name, &remote_url)?;
 
     Ok(())
@@ -4318,7 +4407,7 @@ pub async fn delete_remote(
         LogType::DeleteRemote,
         "Deleting remote".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     repo.remote_delete(&remote_name)?;
 
     Ok(())
@@ -4337,7 +4426,7 @@ pub async fn rename_remote(
         LogType::RenameRemote,
         "Renaming remote".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     let _problematic_refspecs = repo.remote_rename(&old_name, &new_name)?;
 
     Ok(())
@@ -4356,7 +4445,7 @@ pub async fn checkout_branch(
         LogType::CheckoutBranch,
         "Getting local directory".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     let branch = match repo.find_branch(&branch_name, git2::BranchType::Local) {
         Ok(branch) => branch,
         Err(e) => {
@@ -4528,6 +4617,17 @@ pub async fn delete_branch(
         format!("Branch '{}' deleted", branch_name),
     );
 
+    Ok(())
+}
+
+pub async fn recreate_deleted_index(path_string: String) -> Result<(), git2::Error> {
+    let repo = swl!(Repository::open(&path_string))?;
+    let head = match repo.head() {
+        Ok(h) => h,
+        Err(_) => return Ok(()), // Empty repo, no HEAD to reset to
+    };
+    let commit = swl!(head.peel_to_commit())?;
+    swl!(repo.reset(commit.as_object(), ResetType::Mixed, None))?;
     Ok(())
 }
 

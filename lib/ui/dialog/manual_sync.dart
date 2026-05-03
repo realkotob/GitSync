@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:GitSync/ui/component/ai_wand_field.dart';
+import 'package:GitSync/api/ai_completion_service.dart';
 import 'package:GitSync/api/manager/git_manager.dart';
 import 'package:GitSync/api/manager/storage.dart';
 import 'package:GitSync/constant/strings.dart';
@@ -85,21 +87,16 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
     final Future<void> op;
     if (selections.isEmpty) {
       lineSelections.remove(filePath);
-      op = runGitOperation(LogType.Unstage, (event) => event, {"paths": [filePath]});
-    } else {
-      op = runGitOperation(LogType.StageFileLines, (event) => event, {
-        "filePath": filePath,
-        "selectedLineIndices": selections.toList(),
+      op = runGitOperation(LogType.Unstage, (event) => event, {
+        "paths": [filePath],
       });
+    } else {
+      op = runGitOperation(LogType.StageFileLines, (event) => event, {"filePath": filePath, "selectedLineIndices": selections.toList()});
     }
 
     op.then((_) {
       diffCache.remove(filePath);
-      diffCache[filePath] = runGitOperation(
-        LogType.WorkdirFileDiff,
-        (event) => event,
-        {"filePath": filePath},
-      );
+      diffCache[filePath] = runGitOperation(LogType.WorkdirFileDiff, (event) => event?["result"] as Map<String, dynamic>?, {"filePath": filePath});
       staging = false;
       unstaging = false;
       reload();
@@ -110,7 +107,22 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
     context: context,
     barrierColor: Colors.transparent,
     builder: (BuildContext context) => PopScope(
-      canPop: !uploading,
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (uploading) return;
+        if (onLinesPage) {
+          final selections = lineSelections[currentDiffFile];
+          if (selections == null || selections.isEmpty) {
+            lineSelections.remove(currentDiffFile);
+          }
+          onLinesPage = false;
+          pageController.animateToPage(0, duration: animMedium, curve: Curves.easeInOut);
+          setStater?.call(() {});
+          return;
+        }
+        Navigator.of(context).pop();
+      },
       child: StatefulBuilder(
         builder: (context, setState) {
           setStater = setState;
@@ -132,15 +144,12 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
               future: stagedFilePaths,
               builder: (context, stagedFilePathsSnapshot) {
                 final List<(String, int)> filePaths = clientModeEnabled
-                    ? [
-                        ...(uncommittedFilePathsSnapshot.data ?? <(String, int)>[]),
-                        ...(stagedFilePathsSnapshot.data ?? <(String, int)>[]),
-                      ]
-                        .fold<List<(String, int)>>([], (list, item) {
-                          if (!list.any((e) => e.$1 == item.$1)) list.add(item);
-                          return list;
-                        })
-                        .sorted((a, b) => a.$1.toLowerCase().compareTo(b.$1.toLowerCase()))
+                    ? [...(uncommittedFilePathsSnapshot.data ?? <(String, int)>[]), ...(stagedFilePathsSnapshot.data ?? <(String, int)>[])]
+                          .fold<List<(String, int)>>([], (list, item) {
+                            if (!list.any((e) => e.$1 == item.$1)) list.add(item);
+                            return list;
+                          })
+                          .sorted((a, b) => a.$1.toLowerCase().compareTo(b.$1.toLowerCase()))
                     : uncommittedFilePathsSnapshot.data ?? <(String, int)>[];
                 return BaseAlertDialog(
                   expandable: true,
@@ -167,34 +176,68 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                             // crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Expanded(
-                                child: TextField(
-                                  contextMenuBuilder: globalContextMenuBuilder,
-                                  controller: syncMessageController,
-                                  maxLines: null,
-                                  style: TextStyle(
-                                    color: colours.primaryLight,
-                                    fontWeight: FontWeight.bold,
-                                    decoration: TextDecoration.none,
-                                    decorationThickness: 0,
-                                    fontSize: textMD,
-                                  ),
-                                  decoration: InputDecoration(
-                                    fillColor: colours.secondaryDark,
-                                    filled: true,
-                                    border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
-                                    hintText: defaultSyncMessage,
-                                    isCollapsed: true,
-                                    label: Text(
-                                      t.commitMessage.toUpperCase(),
-                                      style: TextStyle(color: colours.secondaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
-                                    ),
-                                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM),
-                                    isDense: true,
-                                  ),
-                                  onChanged: (_) {
-                                    if (context.mounted) setState(() {});
+                                child: AiWandField(
+                                  multiline: true,
+                                  enabled: (stagedFilePathsSnapshot.data ?? []).isNotEmpty || (uncommittedFilePathsSnapshot.data ?? []).isNotEmpty,
+                                  onPressed: () async {
+                                    final staged = await stagedFilePaths;
+                                    final files = staged.isNotEmpty ? staged : (await uncommitedFilePaths);
+                                    const statusLabels = {0: 'added', 1: 'modified', 2: 'deleted', 3: 'added'};
+                                    final buffer = StringBuffer();
+                                    for (final (filePath, fileType) in files) {
+                                      final status = statusLabels[fileType] ?? 'changed';
+                                      buffer.writeln('File ($status): $filePath');
+                                      final diff = await GitManager.getWorkdirFileDiff(filePath);
+                                      if (diff != null) {
+                                        buffer.writeln('+${diff.insertions}/-${diff.deletions}');
+                                        for (final line in diff.lines) {
+                                          if (buffer.length > 4000) break;
+                                          if (line.origin == 'H') {
+                                            buffer.writeln(line.content);
+                                          } else {
+                                            buffer.writeln('${line.origin}${line.content}');
+                                          }
+                                        }
+                                      }
+                                      buffer.writeln();
+                                      if (buffer.length > 4000) break;
+                                    }
+                                    final result = await aiComplete(
+                                      systemPrompt:
+                                          "Generate a concise git commit message for these changes. Use conventional commit format (type: description). Output only the commit message, nothing else.",
+                                      userPrompt: buffer.toString(),
+                                    );
+                                    if (result != null) syncMessageController.text = result.trim();
                                   },
+                                  child: TextField(
+                                    contextMenuBuilder: globalContextMenuBuilder,
+                                    controller: syncMessageController,
+                                    maxLines: null,
+                                    style: TextStyle(
+                                      color: colours.primaryLight,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.none,
+                                      decorationThickness: 0,
+                                      fontSize: textMD,
+                                    ),
+                                    decoration: InputDecoration(
+                                      fillColor: colours.secondaryDark,
+                                      filled: true,
+                                      border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
+                                      hintText: defaultSyncMessage,
+                                      isCollapsed: true,
+                                      label: Text(
+                                        t.commitMessage.toUpperCase(),
+                                        style: TextStyle(color: colours.secondaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
+                                      ),
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM),
+                                      isDense: true,
+                                    ),
+                                    onChanged: (_) {
+                                      if (context.mounted) setState(() {});
+                                    },
+                                  ),
                                 ),
                               ),
                               if (clientModeEnabled) SizedBox(width: spaceSM),
@@ -269,280 +312,291 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                                       controller: pageController,
                                       physics: NeverScrollableScrollPhysics(),
                                       children: [
-                                        Builder(builder: (context) {
-                                          final hasExplicitSelection = selectedFiles.isNotEmpty || lineSelections.isNotEmpty;
+                                        Builder(
+                                          builder: (context) {
+                                            final hasExplicitSelection = selectedFiles.isNotEmpty || lineSelections.isNotEmpty;
 
-                                          return Column(
-                                          children: [
-                                            Container(
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  TextButton.icon(
-                                                    onPressed: () {
-                                                      if (selectedFiles.isNotEmpty || lineSelections.isNotEmpty) {
-                                                        selectedFiles.clear();
-                                                        lineSelections.clear();
-                                                      } else {
-                                                        selectedFiles.clear();
-                                                        lineSelections.clear();
-                                                        selectedFiles.addAll(filePaths.map((item) => item.$1).toList());
-                                                      }
+                                            return Column(
+                                              children: [
+                                                Container(
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      TextButton.icon(
+                                                        onPressed: () {
+                                                          if (selectedFiles.isNotEmpty || lineSelections.isNotEmpty) {
+                                                            selectedFiles.clear();
+                                                            lineSelections.clear();
+                                                          } else {
+                                                            selectedFiles.clear();
+                                                            lineSelections.clear();
+                                                            selectedFiles.addAll(filePaths.map((item) => item.$1).toList());
+                                                          }
 
-                                                      if (context.mounted) setState(() {});
-                                                    },
-                                                    style: ButtonStyle(
-                                                      alignment: Alignment.center,
-                                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                      padding: WidgetStatePropertyAll(
-                                                        EdgeInsets.symmetric(vertical: spaceXS, horizontal: spaceXS + spaceXXXS),
-                                                      ),
-                                                      shape: WidgetStatePropertyAll(
-                                                        RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusSM)),
-                                                      ),
-                                                    ),
-                                                    icon: uncommittedFilePathsSnapshot.data?.isEmpty != true &&
-                                                            selectedFiles.length == uncommittedFilePathsSnapshot.data?.length &&
-                                                            lineSelections.isEmpty
-                                                        ? FaIcon(
-                                                            FontAwesomeIcons.solidCircleCheck,
-                                                            color: hasExplicitSelection ? colours.secondaryInfo : colours.tertiaryInfo,
-                                                            size: textMD,
-                                                          )
-                                                        : FaIcon(
-                                                            hasExplicitSelection ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circleCheck,
-                                                            color: hasExplicitSelection ? colours.secondaryInfo : colours.tertiaryInfo,
-                                                            size: textMD,
+                                                          if (context.mounted) setState(() {});
+                                                        },
+                                                        style: ButtonStyle(
+                                                          alignment: Alignment.center,
+                                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                          padding: WidgetStatePropertyAll(
+                                                            EdgeInsets.symmetric(vertical: spaceXS, horizontal: spaceXS + spaceXXXS),
                                                           ),
-                                                    label: Text(
-                                                      (hasExplicitSelection ? t.deselectAll : t.selectAll).toUpperCase(),
-                                                      style: TextStyle(fontWeight: FontWeight.bold, color: colours.primaryLight),
-                                                    ),
-                                                  ),
-                                                  uncommittedFilePathsSnapshot.connectionState == ConnectionState.waiting ||
-                                                          stagedFilePathsSnapshot.connectionState == ConnectionState.waiting
-                                                      ? Padding(
-                                                          padding: EdgeInsetsGeometry.only(right: spaceSM),
-                                                          child: SizedBox.square(
-                                                            dimension: spaceMD,
-                                                            child: CircularProgressIndicator(color: colours.primaryLight),
-                                                          ),
-                                                        )
-                                                      : SizedBox.shrink(),
-                                                ],
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: AnimatedListView(
-                                                items: filePaths,
-                                                itemBuilder: (context, index) {
-                                                  final fileName = filePaths[index].$1;
-                                                  final fileType = filePaths[index].$2;
-
-                                                  bool isStagedFile() =>
-                                                      stagedFilePathsSnapshot.data?.map((file) => file.$1).contains(fileName) == true;
-
-                                                  final bool isPartiallyStagedFile = clientModeEnabled &&
-                                                      isStagedFile() &&
-                                                      (uncommittedFilePathsSnapshot.data ?? []).any((f) => f.$1 == fileName);
-                                                  final bool isWholeFileSelected = selectedFiles.contains(fileName);
-                                                  final bool hasLineSelections =
-                                                      !isWholeFileSelected && (lineSelections.containsKey(fileName) || isPartiallyStagedFile);
-
-                                                  (IconData, (Color, Color)) infoIcon = (
-                                                    FontAwesomeIcons.solidSquarePlus,
-                                                    (colours.tertiaryPositive, colours.primaryPositive),
-                                                  );
-                                                  switch (fileType) {
-                                                    case 1:
-                                                      {
-                                                        infoIcon = (FontAwesomeIcons.squarePen, (colours.tertiaryWarning, colours.primaryWarning));
-                                                        break;
-                                                      }
-                                                    case 2:
-                                                      {
-                                                        infoIcon = (
-                                                          FontAwesomeIcons.solidSquareMinus,
-                                                          (colours.tertiaryNegative, colours.tertiaryNegative),
-                                                        );
-                                                        break;
-                                                      }
-                                                    case 3:
-                                                      {
-                                                        infoIcon = (
-                                                          FontAwesomeIcons.solidSquarePlus,
-                                                          (colours.tertiaryPositive, colours.primaryPositive),
-                                                        );
-                                                        break;
-                                                      }
-                                                  }
-
-                                                  return TextButton(
-                                                    key: Key(fileName),
-                                                    style: ButtonStyle(
-                                                      backgroundColor: WidgetStatePropertyAll(
-                                                        clientModeEnabled && isStagedFile() ? colours.secondaryPositive : colours.primaryDark,
-                                                      ),
-                                                      padding: WidgetStatePropertyAll(EdgeInsets.zero),
-                                                      shape: WidgetStatePropertyAll(
-                                                        RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusSM)),
-                                                      ),
-                                                    ),
-                                                    onPressed: () {
-                                                      if (selectedFiles.contains(fileName)) {
-                                                        selectedFiles.remove(fileName);
-                                                      } else {
-                                                        selectedFiles.add(fileName);
-                                                        lineSelections.remove(fileName);
-                                                      }
-                                                      if (context.mounted) setState(() {});
-                                                    },
-                                                    child: Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child: Padding(
-                                                            padding: EdgeInsets.symmetric(vertical: spaceXS, horizontal: spaceXS + spaceXXXS),
-                                                            child: Row(
-                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                              children: [
-                                                                hasLineSelections
-                                                                    ? outlineCircleMinus(
-                                                                        size: textMD,
-                                                                        color: colours.tertiaryInfo,
-                                                                      )
-                                                                    : Stack(
-                                                                        children: [
-                                                                          Positioned.fill(
-                                                                            child: FaIcon(
-                                                                              FontAwesomeIcons.circleCheck,
-                                                                              color: isWholeFileSelected && !isPartiallyStagedFile
-                                                                                  ? colours.tertiaryInfo
-                                                                                  : Colors.transparent,
-                                                                              size: textMD,
-                                                                            ),
-                                                                          ),
-                                                                          FaIcon(
-                                                                            isWholeFileSelected
-                                                                                ? (isPartiallyStagedFile
-                                                                                      ? FontAwesomeIcons.circleMinus
-                                                                                      : FontAwesomeIcons.solidCircleCheck)
-                                                                                : FontAwesomeIcons.circleCheck,
-                                                                            color: isWholeFileSelected
-                                                                                ? (clientModeEnabled && isStagedFile()
-                                                                                      ? colours.primaryInfo
-                                                                                      : colours.secondaryInfo)
-                                                                                : colours.tertiaryInfo,
-                                                                            size: textMD,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                SizedBox(width: spaceXS),
-                                                                Expanded(
-                                                                  child: Row(
-                                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                                    children:
-                                                                        (clientModeEnabled && isStagedFile()
-                                                                        ? (List<Widget> l) => l.reversed.toList()
-                                                                        : (List<Widget> l) => l)([
-                                                                          Expanded(
-                                                                            child: ExtendedText(
-                                                                              fileName,
-                                                                              maxLines: 1,
-                                                                              textAlign: clientModeEnabled && isStagedFile()
-                                                                                  ? TextAlign.right
-                                                                                  : TextAlign.left,
-                                                                              overflowWidget: TextOverflowWidget(
-                                                                                position: TextOverflowPosition.start,
-                                                                                child: Text(
-                                                                                  "…",
-                                                                                  style: TextStyle(color: colours.tertiaryLight, fontSize: textMD),
-                                                                                ),
-                                                                              ),
-                                                                              style: TextStyle(color: colours.primaryLight, fontSize: textMD),
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(width: spaceLG),
-                                                                          FaIcon(
-                                                                            infoIcon.$1,
-                                                                            color: clientModeEnabled && isStagedFile()
-                                                                                ? infoIcon.$2.$2
-                                                                                : infoIcon.$2.$1,
-                                                                            size: textMD,
-                                                                          ),
-                                                                        ]),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
+                                                          shape: WidgetStatePropertyAll(
+                                                            RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusSM)),
                                                           ),
                                                         ),
-                                                        if (fileType != 2)
-                                                          IconButton(
-                                                            icon: FaIcon(FontAwesomeIcons.listCheck, color: colours.secondaryLight, size: textMD),
-                                                            style: ButtonStyle(
-                                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                              backgroundColor: WidgetStatePropertyAll(colours.tertiaryDark.withAlpha(128)),
-                                                              padding: WidgetStatePropertyAll(
-                                                                EdgeInsets.symmetric(horizontal: spaceXS, vertical: spaceXXXS),
+                                                        icon:
+                                                            uncommittedFilePathsSnapshot.data?.isEmpty != true &&
+                                                                selectedFiles.length == uncommittedFilePathsSnapshot.data?.length &&
+                                                                lineSelections.isEmpty
+                                                            ? FaIcon(
+                                                                FontAwesomeIcons.solidCircleCheck,
+                                                                color: hasExplicitSelection ? colours.secondaryInfo : colours.tertiaryInfo,
+                                                                size: textMD,
+                                                              )
+                                                            : FaIcon(
+                                                                hasExplicitSelection
+                                                                    ? FontAwesomeIcons.solidCircleCheck
+                                                                    : FontAwesomeIcons.circleCheck,
+                                                                color: hasExplicitSelection ? colours.secondaryInfo : colours.tertiaryInfo,
+                                                                size: textMD,
                                                               ),
-                                                              shape: WidgetStatePropertyAll(
-                                                                RoundedRectangleBorder(
-                                                                  borderRadius: BorderRadius.horizontal(left: cornerRadiusXS, right: cornerRadiusSM),
+                                                        label: Text(
+                                                          (hasExplicitSelection ? t.deselectAll : t.selectAll).toUpperCase(),
+                                                          style: TextStyle(fontWeight: FontWeight.bold, color: colours.primaryLight),
+                                                        ),
+                                                      ),
+                                                      uncommittedFilePathsSnapshot.connectionState == ConnectionState.waiting ||
+                                                              stagedFilePathsSnapshot.connectionState == ConnectionState.waiting
+                                                          ? Padding(
+                                                              padding: EdgeInsetsGeometry.only(right: spaceSM),
+                                                              child: SizedBox.square(
+                                                                dimension: spaceMD,
+                                                                child: CircularProgressIndicator(color: colours.primaryLight),
+                                                              ),
+                                                            )
+                                                          : SizedBox.shrink(),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: AnimatedListView(
+                                                    items: filePaths,
+                                                    itemBuilder: (context, index) {
+                                                      final fileName = filePaths[index].$1;
+                                                      final fileType = filePaths[index].$2;
+
+                                                      bool isStagedFile() =>
+                                                          stagedFilePathsSnapshot.data?.map((file) => file.$1).contains(fileName) == true;
+
+                                                      final bool isPartiallyStagedFile =
+                                                          clientModeEnabled &&
+                                                          isStagedFile() &&
+                                                          (uncommittedFilePathsSnapshot.data ?? []).any((f) => f.$1 == fileName);
+                                                      final bool isWholeFileSelected = selectedFiles.contains(fileName);
+                                                      final bool hasLineSelections =
+                                                          !isWholeFileSelected && (lineSelections.containsKey(fileName) || isPartiallyStagedFile);
+
+                                                      (FaIconData, (Color, Color)) infoIcon = (
+                                                        FontAwesomeIcons.solidSquarePlus,
+                                                        (colours.tertiaryPositive, colours.primaryPositive),
+                                                      );
+                                                      switch (fileType) {
+                                                        case 1:
+                                                          {
+                                                            infoIcon = (
+                                                              FontAwesomeIcons.squarePen,
+                                                              (colours.tertiaryWarning, colours.primaryWarning),
+                                                            );
+                                                            break;
+                                                          }
+                                                        case 2:
+                                                          {
+                                                            infoIcon = (
+                                                              FontAwesomeIcons.solidSquareMinus,
+                                                              (colours.tertiaryNegative, colours.tertiaryNegative),
+                                                            );
+                                                            break;
+                                                          }
+                                                        case 3:
+                                                          {
+                                                            infoIcon = (
+                                                              FontAwesomeIcons.solidSquarePlus,
+                                                              (colours.tertiaryPositive, colours.primaryPositive),
+                                                            );
+                                                            break;
+                                                          }
+                                                      }
+
+                                                      return TextButton(
+                                                        key: Key(fileName),
+                                                        style: ButtonStyle(
+                                                          backgroundColor: WidgetStatePropertyAll(
+                                                            clientModeEnabled && isStagedFile() ? colours.secondaryPositive : colours.primaryDark,
+                                                          ),
+                                                          padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                                                          shape: WidgetStatePropertyAll(
+                                                            RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusSM)),
+                                                          ),
+                                                        ),
+                                                        onPressed: () {
+                                                          if (selectedFiles.contains(fileName)) {
+                                                            selectedFiles.remove(fileName);
+                                                          } else {
+                                                            selectedFiles.add(fileName);
+                                                            lineSelections.remove(fileName);
+                                                          }
+                                                          if (context.mounted) setState(() {});
+                                                        },
+                                                        child: Row(
+                                                          children: [
+                                                            Expanded(
+                                                              child: Padding(
+                                                                padding: EdgeInsets.symmetric(vertical: spaceXS, horizontal: spaceXS + spaceXXXS),
+                                                                child: Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                  children: [
+                                                                    hasLineSelections
+                                                                        ? outlineCircleMinus(size: textMD, color: colours.tertiaryInfo)
+                                                                        : Stack(
+                                                                            children: [
+                                                                              Positioned.fill(
+                                                                                child: FaIcon(
+                                                                                  FontAwesomeIcons.circleCheck,
+                                                                                  color: isWholeFileSelected && !isPartiallyStagedFile
+                                                                                      ? colours.tertiaryInfo
+                                                                                      : Colors.transparent,
+                                                                                  size: textMD,
+                                                                                ),
+                                                                              ),
+                                                                              FaIcon(
+                                                                                isWholeFileSelected
+                                                                                    ? (isPartiallyStagedFile
+                                                                                          ? FontAwesomeIcons.circleMinus
+                                                                                          : FontAwesomeIcons.solidCircleCheck)
+                                                                                    : FontAwesomeIcons.circleCheck,
+                                                                                color: isWholeFileSelected
+                                                                                    ? (clientModeEnabled && isStagedFile()
+                                                                                          ? colours.primaryInfo
+                                                                                          : colours.secondaryInfo)
+                                                                                    : colours.tertiaryInfo,
+                                                                                size: textMD,
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                    SizedBox(width: spaceXS),
+                                                                    Expanded(
+                                                                      child: Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.start,
+                                                                        children:
+                                                                            (clientModeEnabled && isStagedFile()
+                                                                            ? (List<Widget> l) => l.reversed.toList()
+                                                                            : (List<Widget> l) => l)([
+                                                                              Expanded(
+                                                                                child: ExtendedText(
+                                                                                  fileName,
+                                                                                  maxLines: 1,
+                                                                                  textAlign: clientModeEnabled && isStagedFile()
+                                                                                      ? TextAlign.right
+                                                                                      : TextAlign.left,
+                                                                                  overflowWidget: TextOverflowWidget(
+                                                                                    position: TextOverflowPosition.start,
+                                                                                    child: Text(
+                                                                                      "…",
+                                                                                      style: TextStyle(
+                                                                                        color: colours.tertiaryLight,
+                                                                                        fontSize: textMD,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  style: TextStyle(color: colours.primaryLight, fontSize: textMD),
+                                                                                ),
+                                                                              ),
+                                                                              SizedBox(width: spaceLG),
+                                                                              FaIcon(
+                                                                                infoIcon.$1,
+                                                                                color: clientModeEnabled && isStagedFile()
+                                                                                    ? infoIcon.$2.$2
+                                                                                    : infoIcon.$2.$1,
+                                                                                size: textMD,
+                                                                              ),
+                                                                            ]),
+                                                                      ),
+                                                                    ),
+                                                                  ],
                                                                 ),
                                                               ),
                                                             ),
-                                                            onPressed: () {
-                                                              currentDiffFile = fileName;
-                                                              onLinesPage = true;
-                                                              final future = diffCache.putIfAbsent(
-                                                                fileName,
-                                                                () => runGitOperation(
-                                                                  LogType.WorkdirFileDiff,
-                                                                  (event) => event,
-                                                                  {"filePath": fileName},
+                                                            if (fileType != 2)
+                                                              IconButton(
+                                                                icon: FaIcon(FontAwesomeIcons.listCheck, color: colours.secondaryLight, size: textMD),
+                                                                style: ButtonStyle(
+                                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                                  backgroundColor: WidgetStatePropertyAll(colours.tertiaryDark.withAlpha(128)),
+                                                                  padding: WidgetStatePropertyAll(
+                                                                    EdgeInsets.symmetric(horizontal: spaceXS, vertical: spaceXXXS),
+                                                                  ),
+                                                                  shape: WidgetStatePropertyAll(
+                                                                    RoundedRectangleBorder(
+                                                                      borderRadius: BorderRadius.horizontal(
+                                                                        left: cornerRadiusXS,
+                                                                        right: cornerRadiusSM,
+                                                                      ),
+                                                                    ),
+                                                                  ),
                                                                 ),
-                                                              );
-                                                              future.then((data) {
-                                                                if (data == null || (lineSelections[fileName]?.isNotEmpty ?? false)) return;
-                                                                final lines = data["lines"] as List? ?? [];
+                                                                onPressed: () {
+                                                                  currentDiffFile = fileName;
+                                                                  onLinesPage = true;
+                                                                  final future = diffCache.putIfAbsent(
+                                                                    fileName,
+                                                                    () => runGitOperation(LogType.WorkdirFileDiff, (event) => event?["result"] as Map<String, dynamic>?, {
+                                                                      "filePath": fileName,
+                                                                    }),
+                                                                  );
+                                                                  future.then((data) {
+                                                                    if (data == null || (lineSelections[fileName]?.isNotEmpty ?? false)) return;
+                                                                    final lines = data["lines"] as List? ?? [];
 
-                                                                final isFullyStaged = clientModeEnabled &&
-                                                                    (stagedFilePathsSnapshot.data ?? []).any((f) => f.$1 == fileName) &&
-                                                                    !(uncommittedFilePathsSnapshot.data ?? []).any((f) => f.$1 == fileName);
+                                                                    final isFullyStaged =
+                                                                        clientModeEnabled &&
+                                                                        (stagedFilePathsSnapshot.data ?? []).any((f) => f.$1 == fileName) &&
+                                                                        !(uncommittedFilePathsSnapshot.data ?? []).any((f) => f.$1 == fileName);
 
-                                                                final Set<int> preSelected;
-                                                                if (isFullyStaged) {
-                                                                  preSelected = lines
-                                                                      .where((l) => l["origin"] != " ")
-                                                                      .map<int>((l) => l["lineIndex"] as int)
-                                                                      .toSet();
-                                                                } else {
-                                                                  preSelected = lines
-                                                                      .where((l) => l["isStaged"] == true)
-                                                                      .map<int>((l) => l["lineIndex"] as int)
-                                                                      .toSet();
-                                                                }
+                                                                    final Set<int> preSelected;
+                                                                    if (isFullyStaged) {
+                                                                      preSelected = lines
+                                                                          .where((l) => l["origin"] != " ")
+                                                                          .map<int>((l) => l["lineIndex"] as int)
+                                                                          .toSet();
+                                                                    } else {
+                                                                      preSelected = lines
+                                                                          .where((l) => l["isStaged"] == true)
+                                                                          .map<int>((l) => l["lineIndex"] as int)
+                                                                          .toSet();
+                                                                    }
 
-                                                                if (preSelected.isNotEmpty) {
-                                                                  lineSelections[fileName] = preSelected;
-                                                                  selectedFiles.remove(fileName);
+                                                                    if (preSelected.isNotEmpty) {
+                                                                      lineSelections[fileName] = preSelected;
+                                                                      selectedFiles.remove(fileName);
+                                                                      if (context.mounted) setState(() {});
+                                                                    }
+                                                                  });
                                                                   if (context.mounted) setState(() {});
-                                                                }
-                                                              });
-                                                              if (context.mounted) setState(() {});
-                                                              pageController.animateToPage(1, duration: animMedium, curve: Curves.easeInOut);
-                                                            },
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
-                                                isSameItem: (a, b) => a == b,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                        }),
+                                                                  pageController.animateToPage(1, duration: animMedium, curve: Curves.easeInOut);
+                                                                },
+                                                              ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
+                                                    isSameItem: (a, b) => a == b,
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
 
                                         Builder(
                                           builder: (context) {
@@ -645,8 +699,11 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                                                               if (context.mounted) setState(() {});
 
                                                               cancelDebounce("lineStage_$currentDiffFile");
-                                                              flushLineStage(currentDiffFile!, Set<int>.from(selections),
-                                                                  isUnstaging: selections.isEmpty);
+                                                              flushLineStage(
+                                                                currentDiffFile!,
+                                                                Set<int>.from(selections),
+                                                                isUnstaging: selections.isEmpty,
+                                                              );
                                                             },
                                                             style: ButtonStyle(
                                                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -657,7 +714,8 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                                                                 RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusSM)),
                                                               ),
                                                             ),
-                                                            icon: selections.length ==
+                                                            icon:
+                                                                selections.length ==
                                                                         diffLines.where((l) => l.origin == "+" || l.origin == "-").length &&
                                                                     selections.isNotEmpty
                                                                 ? FaIcon(
@@ -666,15 +724,8 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                                                                     size: textSM,
                                                                   )
                                                                 : selections.isEmpty
-                                                                    ? FaIcon(
-                                                                        FontAwesomeIcons.circleCheck,
-                                                                        color: colours.tertiaryInfo,
-                                                                        size: textSM,
-                                                                      )
-                                                                    : outlineCircleMinus(
-                                                                        size: textSM,
-                                                                        color: colours.secondaryInfo,
-                                                                      ),
+                                                                ? FaIcon(FontAwesomeIcons.circleCheck, color: colours.tertiaryInfo, size: textSM)
+                                                                : outlineCircleMinus(size: textSM, color: colours.secondaryInfo),
                                                             label: Text(
                                                               (selections.isNotEmpty ? t.deselectAll : t.selectAll).toUpperCase(),
                                                               style: TextStyle(
@@ -775,8 +826,11 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                                                                           if (context.mounted) setState(() {});
 
                                                                           debounce("lineStage_$currentDiffFile", 1000, () {
-                                                                            flushLineStage(currentDiffFile!, Set<int>.from(selections),
-                                                                                isUnstaging: isSelected);
+                                                                            flushLineStage(
+                                                                              currentDiffFile!,
+                                                                              Set<int>.from(selections),
+                                                                              isUnstaging: isSelected,
+                                                                            );
                                                                           });
                                                                         }
                                                                       : null,
@@ -1017,8 +1071,7 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                                       backgroundColor: WidgetStatePropertyAll(
                                         !onLinesPage &&
                                                 (selectedFiles
-                                                        .where((file) =>
-                                                            !(stagedFilePathsSnapshot.data ?? []).map((file) => file.$1).contains(file))
+                                                        .where((file) => !(stagedFilePathsSnapshot.data ?? []).map((file) => file.$1).contains(file))
                                                         .isNotEmpty ||
                                                     lineSelections.isNotEmpty)
                                             ? colours.tertiaryInfo
@@ -1043,8 +1096,7 @@ Future<bool> showDialog(BuildContext context, {bool? hasRemotes}) async {
                                         color:
                                             !onLinesPage &&
                                                 (selectedFiles
-                                                        .where((file) =>
-                                                            !(stagedFilePathsSnapshot.data ?? []).map((file) => file.$1).contains(file))
+                                                        .where((file) => !(stagedFilePathsSnapshot.data ?? []).map((file) => file.$1).contains(file))
                                                         .isNotEmpty ||
                                                     lineSelections.isNotEmpty)
                                             ? colours.tertiaryDark

@@ -156,32 +156,48 @@ class _ActionsPageState extends State<ActionsPage> {
             SizedBox(height: spaceSM),
 
             Expanded(
-              child: _runs.isEmpty && !_loading
-                  ? Center(
-                      child: Text(
-                        t.actionsNotFound.toUpperCase(),
-                        style: TextStyle(color: colours.secondaryLight, fontWeight: FontWeight.bold, fontSize: textLG),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: spaceMD),
-                      itemCount: _runs.length + (_loading || _loadNextPage != null ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index >= _runs.length) {
-                          return Padding(
-                            padding: EdgeInsets.all(spaceMD),
+              child: RefreshIndicator(
+                color: colours.tertiaryDark,
+                onRefresh: () async {
+                  _fetchActionRuns();
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: _runs.isEmpty && !_loading
+                    ? LayoutBuilder(
+                        builder: (context, constraints) => SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: constraints.maxHeight,
                             child: Center(
-                              child: CircularProgressIndicator(color: colours.secondaryLight, strokeWidth: spaceXXXXS),
+                              child: Text(
+                                t.actionsNotFound.toUpperCase(),
+                                style: TextStyle(color: colours.secondaryLight, fontWeight: FontWeight.bold, fontSize: textLG),
+                              ),
                             ),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: spaceMD),
+                        itemCount: _runs.length + (_loading || _loadNextPage != null ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= _runs.length) {
+                            return Padding(
+                              padding: EdgeInsets.all(spaceMD),
+                              child: Center(
+                                child: CircularProgressIndicator(color: colours.secondaryLight, strokeWidth: spaceXXXXS),
+                              ),
+                            );
+                          }
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: spaceXS),
+                            child: _ItemActionRun(run: _runs[index]),
                           );
-                        }
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: spaceXS),
-                          child: _ItemActionRun(run: _runs[index]),
-                        );
-                      },
-                    ),
+                        },
+                      ),
+              ),
             ),
           ],
         ),
@@ -229,7 +245,7 @@ String _formatDuration(Duration d) {
   return '${seconds}s';
 }
 
-(IconData, Color) _statusIconAndColor(ActionRunStatus status) {
+(FaIconData, Color) _statusIconAndColor(ActionRunStatus status) {
   return switch (status) {
     ActionRunStatus.success => (FontAwesomeIcons.solidCircleCheck, colours.tertiaryPositive),
     ActionRunStatus.failure => (FontAwesomeIcons.solidCircleXmark, colours.primaryNegative),

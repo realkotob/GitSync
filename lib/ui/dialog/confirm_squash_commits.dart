@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:sprintf/sprintf.dart';
 import '../../../constant/dimens.dart';
 import '../../../ui/dialog/base_alert_dialog.dart';
+import 'package:GitSync/api/ai_completion_service.dart';
+import 'package:GitSync/api/manager/git_manager.dart';
 import 'package:GitSync/global.dart';
+import 'package:GitSync/ui/component/ai_wand_field.dart';
 import 'package:GitSync/src/rust/api/git_manager.dart' as GitManagerRs;
 
 Future<void> showDialog(
@@ -39,50 +42,71 @@ Future<void> showDialog(
                 ),
               ),
               SizedBox(height: spaceXS),
-              ...selectedCommits.map((commit) => Padding(
-                padding: EdgeInsets.only(bottom: spaceXXXS),
-                child: Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colours.tertiaryDark,
-                        borderRadius: BorderRadius.all(cornerRadiusXS),
+              ...selectedCommits.map(
+                (commit) => Padding(
+                  padding: EdgeInsets.only(bottom: spaceXXXS),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(color: colours.tertiaryDark, borderRadius: BorderRadius.all(cornerRadiusXS)),
+                        padding: EdgeInsets.symmetric(horizontal: spaceXS, vertical: spaceXXXS),
+                        child: Text(
+                          commit.reference.substring(0, 7).toUpperCase(),
+                          style: TextStyle(color: colours.tertiaryInfo, fontSize: textXS, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: spaceXS, vertical: spaceXXXS),
-                      child: Text(
-                        commit.reference.substring(0, 7).toUpperCase(),
-                        style: TextStyle(color: colours.tertiaryInfo, fontSize: textXS, fontWeight: FontWeight.bold),
+                      SizedBox(width: spaceXS),
+                      Expanded(
+                        child: Text(
+                          commit.commitMessage,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: colours.secondaryLight, fontSize: textXS),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: spaceXS),
-                    Expanded(
-                      child: Text(
-                        commit.commitMessage,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: colours.secondaryLight, fontSize: textXS),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              )),
+              ),
               SizedBox(height: spaceMD),
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(borderRadius: BorderRadius.all(cornerRadiusSM), color: colours.secondaryDark),
-                    padding: EdgeInsets.symmetric(horizontal: spaceSM, vertical: spaceXS),
-                    child: TextField(
-                      controller: messageController,
-                      maxLines: 5,
-                      minLines: 3,
-                      style: TextStyle(color: colours.primaryLight, fontSize: textSM),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
+                  AiWandField(
+                    multiline: true,
+                    onPressed: () async {
+                      final buffer = StringBuffer();
+                      for (final commit in selectedCommits) {
+                        final shortSha = commit.reference.substring(0, 7);
+                        buffer.writeln('$shortSha (+${commit.additions}/-${commit.deletions}): ${commit.commitMessage}');
+                        final diff = await GitManager.getCommitDiff(commit.reference, '${commit.reference}^');
+                        if (diff != null) {
+                          buffer.writeln('Files: ${diff.diffParts.keys.join(", ")}');
+                          buffer.write(formatDiffParts(diff.diffParts, maxChars: 2000));
+                        }
+                        buffer.writeln();
+                        if (buffer.length > 4000) break;
+                      }
+                      final result = await aiComplete(
+                        systemPrompt:
+                            "Combine these commits into a single squash commit message. Use conventional commit format. Output only the message, nothing else.",
+                        userPrompt: buffer.toString(),
+                      );
+                      if (result != null) {
+                        messageController.text = result.trim();
+                        setState(() {});
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(borderRadius: BorderRadius.all(cornerRadiusSM), color: colours.secondaryDark),
+                      padding: EdgeInsets.symmetric(horizontal: spaceSM, vertical: spaceXS),
+                      child: TextField(
+                        controller: messageController,
+                        maxLines: 5,
+                        minLines: 3,
+                        style: TextStyle(color: colours.primaryLight, fontSize: textSM),
+                        decoration: InputDecoration(border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.zero),
                       ),
                     ),
                   ),
@@ -99,11 +123,7 @@ Future<void> showDialog(
               SizedBox(height: spaceSM),
               Text(
                 t.squashCommitsWarning,
-                style: TextStyle(
-                  color: hasPushed ? colours.primaryNegative : colours.tertiaryWarning,
-                  fontWeight: FontWeight.bold,
-                  fontSize: textSM,
-                ),
+                style: TextStyle(color: hasPushed ? colours.primaryNegative : colours.tertiaryWarning, fontWeight: FontWeight.bold, fontSize: textSM),
               ),
             ],
           ),
@@ -121,11 +141,7 @@ Future<void> showDialog(
           TextButton.icon(
             label: Text(
               t.squash.toUpperCase(),
-              style: TextStyle(
-                color: colours.primaryPositive,
-                fontSize: textMD,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: colours.primaryPositive, fontSize: textMD, fontWeight: FontWeight.bold),
             ),
             iconAlignment: IconAlignment.end,
             icon: loading

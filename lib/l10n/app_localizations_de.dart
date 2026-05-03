@@ -138,16 +138,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get restorePurchase => 'Kauf wiederherstellen';
 
   @override
-  String get verifyGhSponsorTitle => 'GitHub-Sponsoring verifizieren';
-
-  @override
-  String get verifyGhSponsorMsg =>
-      'Wenn Sie ein GitHub-Sponsor sind, können Sie Premium-Funktionen kostenlos nutzen. Authentifizieren Sie sich mit GitHub, damit wir Ihren Sponsor-Status verifizieren können.';
-
-  @override
-  String get verifyGhSponsorNote => 'Hinweis: Neue Sponsorings können bis zu 1 Tag dauern, bis sie in der App verfügbar sind.';
-
-  @override
   String get premiumStoreOnlyBanner => 'Store version only — Get it on the App Store or Play Store';
 
   @override
@@ -868,7 +858,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get scheduledSyncDescription => 'Automatically syncs periodically in the background';
 
   @override
-  String get sync => 'Sync';
+  String get tabHome => 'Home';
 
   @override
   String get iosDefaultSyncRate => 'wenn iOS es erlaubt';
@@ -944,6 +934,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get useForWidgetManualSync => 'Use for Manual Sync Widget';
+
+  @override
+  String get remoteAuthMismatchTitle => 'Auth won\'t work with this remote';
+
+  @override
+  String get remoteAuthMismatchUsesSsh => 'This remote uses SSH — tap to switch';
+
+  @override
+  String get remoteAuthMismatchUsesHttps => 'This remote uses HTTPS or OAuth — tap to switch';
 
   @override
   String get selectYourGitProviderAndAuthenticate => 'Wählen Sie Ihren Git-Anbieter aus und authentifizieren Sie sich';
@@ -1905,6 +1904,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get networkUnavailableRetry => 'Netzwerk nicht verfügbar!\nGitSync wird es erneut versuchen, wenn die Verbindung wiederhergestellt ist';
 
   @override
+  String get networkStallManual => 'Poor network — please try again';
+
+  @override
+  String get networkUnavailableManual => 'Network unavailable — please try again';
+
+  @override
+  String get networkRetryComplete => 'Queued operation completed';
+
+  @override
   String get failedToResolveAddressMessage => 'Could not reach the server. Check your internet connection or verify the repository URL is correct.';
 
   @override
@@ -2273,4 +2281,38 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get providerTools => 'Provider Tools';
+
+  @override
+  String get tabChat => 'Chat';
+
+  @override
+  String get tabFiles => 'Files';
+
+  @override
+  String get chatComingSoon => 'Chat features coming soon';
+
+  @override
+  String get chatComingSoonSubtitle => 'Interact with your files using Claude Code';
+
+  @override
+  String get noRepoSetup => 'Set up a repository first';
+
+  @override
+  String get enableAiFeatures => 'Enable AI Features';
+
+  @override
+  String get hideAiFeatures => 'Hide AI Features';
+
+  @override
+  String get hideAiFeaturesConfirmTitle => 'Hide AI Features?';
+
+  @override
+  String get hideAiFeaturesConfirmMsg =>
+      'This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.';
+
+  @override
+  String get aiSetupTitle => 'Set Up AI';
+
+  @override
+  String get aiSetupMsg => 'Configure an AI provider to use this feature. Go to AI settings?';
 }
