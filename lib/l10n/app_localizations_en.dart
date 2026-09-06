@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dismiss => 'Dismiss';
 
   @override
+  String get dontShowAgain => 'Don\'t Show Again';
+
+  @override
   String get skip => 'Skip';
 
   @override
@@ -136,16 +139,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restorePurchase => 'Restore Purchase';
-
-  @override
-  String get verifyGhSponsorTitle => 'Verify GitHub Sponsorship';
-
-  @override
-  String get verifyGhSponsorMsg =>
-      'If you are a GitHub Sponsor, you can access premium features for free. Authenticate with GitHub so we can verify your sponsor status.';
-
-  @override
-  String get verifyGhSponsorNote => 'Note: new sponsorships may take up to 1 day to become available in the app.';
 
   @override
   String get premiumStoreOnlyBanner => 'Store version only — Get it on the App Store or Play Store';
@@ -370,13 +363,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepChanges => 'Keep Changes';
 
   @override
-  String get local => 'Local';
+  String get current => 'Current';
 
   @override
   String get both => 'Both';
 
   @override
   String get remote => 'Remote';
+
+  @override
+  String get incoming => 'Incoming';
 
   @override
   String get merge => 'Merge';
@@ -400,10 +396,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resolveAll => 'Resolve All';
 
   @override
-  String get allLocal => 'All Local';
+  String get allCurrent => 'All Current';
 
   @override
-  String get allRemote => 'All Remote';
+  String get allIncoming => 'All Incoming';
 
   @override
   String get iosClearDataTitle => 'Is this a fresh install?';
@@ -762,6 +758,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingLaunchWiki => 'Launch the wiki';
 
   @override
+  String get onboardingHowYouFoundUsTitle => 'How did you discover GitSync?';
+
+  @override
+  String get onboardingHowYouFoundUsSubtitle => 'Help us understand where our users come from (select all that apply)';
+
+  @override
+  String get sourceReddit => 'Reddit';
+
+  @override
+  String get sourceYoutube => 'YouTube';
+
+  @override
+  String get sourceDiscord => 'Discord';
+
+  @override
+  String get sourceMedium => 'Medium';
+
+  @override
+  String get sourceGoogle => 'Google Search';
+
+  @override
+  String get sourceGithubFdroid => 'GitHub / F-Droid';
+
+  @override
+  String get sourceStore => 'Play Store / App Store';
+
+  @override
+  String get sourceWordOfMouth => 'Word of mouth';
+
+  @override
+  String get sourceAdvertisements => 'Advertisements';
+
+  @override
+  String get sourceObsidian => 'Obsidian Git Plugin';
+
+  @override
+  String get sourceAiSearch => 'AI Search (ChatGPT, Claude, Grok)';
+
+  @override
+  String get sourceOther => 'Other';
+
+  @override
+  String get sourceOtherHint => 'Tell us where';
+
+  @override
   String get currentBranch => 'Current Branch';
 
   @override
@@ -865,7 +906,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledSyncDescription => 'Automatically syncs periodically in the background';
 
   @override
-  String get sync => 'Sync';
+  String get tabHome => 'Home';
 
   @override
   String get iosDefaultSyncRate => 'when iOS allows';
@@ -941,6 +982,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get useForWidgetManualSync => 'Use for Manual Sync Widget';
+
+  @override
+  String get remoteAuthMismatchTitle => 'Auth won\'t work with this remote';
+
+  @override
+  String get remoteAuthMismatchUsesSsh => 'This remote uses SSH — tap to switch';
+
+  @override
+  String get remoteAuthMismatchUsesHttps => 'This remote uses HTTPS or OAuth — tap to switch';
 
   @override
   String get selectYourGitProviderAndAuthenticate => 'Select your git provider and authenticate';
@@ -1428,6 +1478,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewGitLogDescription => 'View the full git log history';
 
   @override
+  String get openInTextastic => 'Open in Textastic';
+
+  @override
+  String get openInTextasticDescription => 'Open file in Textastic app';
+
+  @override
   String get ignoreUntrack => '.gitignore + Untrack';
 
   @override
@@ -1886,7 +1942,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get someFeaturesMayNotWork => 'Some features may not work.';
 
   @override
-  String get unsupportedGitAttributes => 'This repo uses git features only available in store versions.';
+  String get unsupportedGitAttributes => 'This repo uses git filters, only available in store versions.';
 
   @override
   String get tapToOpenPlayStore => 'Tap to update.';
@@ -1899,6 +1955,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkUnavailableRetry => 'Network unavailable!\nGitSync will retry when reconnected';
+
+  @override
+  String get networkStallManual => 'Poor network — please try again';
+
+  @override
+  String get networkUnavailableManual => 'Network unavailable — please try again';
+
+  @override
+  String get networkRetryComplete => 'Queued operation completed';
 
   @override
   String get failedToResolveAddressMessage => 'Could not reach the server. Check your internet connection or verify the repository URL is correct.';
@@ -1996,6 +2061,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trackIssue => 'Track Issue & Respond to Messages';
+
+  @override
+  String get issueDuplicateTitle => 'Already Reported';
+
+  @override
+  String get issueDuplicateMsg =>
+      'This bug has already been reported and is being tracked in an open issue. \n\nOpen the issue to follow progress, or send your report as a message there so it reaches us without creating a duplicate.';
+
+  @override
+  String get viewIssue => 'View Issue';
+
+  @override
+  String get sendMessage => 'Send As Message';
+
+  @override
+  String get issueCommentSuccessTitle => 'Message Sent';
+
+  @override
+  String get issueCommentSuccessMsg =>
+      'Your report has been added to the existing issue. Bookmark this page to track progress and respond to messages. \n\nIssues with no activity for 7 days are automatically closed.';
+
+  @override
+  String get issueCommentFailedMsg => 'Your message couldn’t be sent. Please check your connection and try again.';
 
   @override
   String get createNewRepository => 'Create New Repository';
@@ -2268,4 +2356,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get providerTools => 'Provider Tools';
+
+  @override
+  String get tabChat => 'Chat';
+
+  @override
+  String get tabFiles => 'Files';
+
+  @override
+  String get chatComingSoon => 'Chat features coming soon';
+
+  @override
+  String get chatComingSoonSubtitle => 'Interact with your files using Claude Code';
+
+  @override
+  String get noRepoSetup => 'Set up a repository first';
+
+  @override
+  String get enableAiFeatures => 'Enable AI Features';
+
+  @override
+  String get hideAiFeatures => 'Hide AI Features';
+
+  @override
+  String get hideAiFeaturesConfirmTitle => 'Hide AI Features?';
+
+  @override
+  String get hideAiFeaturesConfirmMsg =>
+      'This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.';
+
+  @override
+  String get aiSetupTitle => 'Set Up AI';
+
+  @override
+  String get aiSetupMsg => 'Configure an AI provider to use this feature. Go to AI settings?';
 }

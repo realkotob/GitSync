@@ -252,7 +252,6 @@ async fn run_with_lock<T: Default>(
     use nix::fcntl::{Flock, FlockArg};
     use std::fs;
     use std::io::{Read, Seek, SeekFrom, Write};
-    init(None);
 
     let queues_dir = format!("{}/queues", queue_dir);
     fs::create_dir_all(&queues_dir)
@@ -715,6 +714,36 @@ pub fn init(homepath: Option<String>) {
     if let Ok(mut config) = git2::Config::open_default() {
         let _ = config.set_str("safe.directory", "*");
     }
+
+    ensure_empty_known_hosts();
+}
+
+fn ensure_empty_known_hosts() {
+    let Ok(home) = env::var("HOME") else { return };
+    let ssh_dir = PathBuf::from(home).join(".ssh");
+    let known_hosts = ssh_dir.join("known_hosts");
+
+    if !ssh_dir.exists() {
+        if fs::create_dir_all(&ssh_dir).is_err() {
+            return;
+        }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&ssh_dir, fs::Permissions::from_mode(0o700));
+        }
+    }
+
+    if !known_hosts.exists() {
+        if fs::write(&known_hosts, b"").is_err() {
+            return;
+        }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&known_hosts, fs::Permissions::from_mode(0o600));
+        }
+    }
 }
 
 fn get_default_callbacks<'cb>(
@@ -728,10 +757,17 @@ fn get_default_callbacks<'cb>(
     if let (Some(provider), Some(credentials)) = (provider, credentials) {
         callbacks.credentials(move |_url, username_from_url, _allowed_types| {
             if provider == "SSH" {
+                let username = username_from_url.unwrap_or("git");
+                let key = credentials.1.as_str();
+                if !key.contains("-----BEGIN") {
+                    return Err(git2::Error::from_str(
+                        "SSH key is not in PEM format (missing '-----BEGIN' header)",
+                    ));
+                }
                 Cred::ssh_key_from_memory(
-                    username_from_url.unwrap(),
+                    username,
                     None,
-                    credentials.1.as_str(),
+                    key,
                     if credentials.0.is_empty() {
                         None
                     } else {
@@ -858,20 +894,20 @@ pub async fn clone_repository(
     let _ = repo.cleanup_state();
 
     if !bare {
-    let mut remote = repo.find_remote("origin")?;
-    let callbacks = get_default_callbacks(Some(&provider), Some(&credentials));
-    let mut fo2 = FetchOptions::new();
-    fo2.update_fetchhead(true);
-    fo2.remote_callbacks(callbacks);
-    let _ = remote.fetch::<&str>(&[], Some(&mut fo2), None);
+        let mut remote = repo.find_remote("origin")?;
+        let callbacks = get_default_callbacks(Some(&provider), Some(&credentials));
+        let mut fo2 = FetchOptions::new();
+        fo2.update_fetchhead(true);
+        fo2.remote_callbacks(callbacks);
+        let _ = remote.fetch::<&str>(&[], Some(&mut fo2), None);
 
-    _log(
-        Arc::clone(&log_callback),
-        LogType::Clone,
-        "Repository cloned successfully".to_string(),
-    );
+        _log(
+            Arc::clone(&log_callback),
+            LogType::Clone,
+            "Repository cloned successfully".to_string(),
+        );
 
-    swl!(swl!(repo.submodules())?.iter_mut().try_for_each(|sm| {
+        swl!(swl!(repo.submodules())?.iter_mut().try_for_each(|sm| {
         let sm_name = sm.name().unwrap_or("unknown").to_string();
 
         _log(
@@ -1041,14 +1077,14 @@ pub async fn clone_repository(
         Ok::<(), git2::Error>(())
     }))?;
 
-    set_author(&repo, &author);
-    let _ = repo.cleanup_state();
+        set_author(&repo, &author);
+        let _ = repo.cleanup_state();
 
-    _log(
-        Arc::clone(&log_callback),
-        LogType::Clone,
-        "Submodules updated successfully".to_string(),
-    );
+        _log(
+            Arc::clone(&log_callback),
+            LogType::Clone,
+            "Submodules updated successfully".to_string(),
+        );
     } // !bare
 
     Ok(())
@@ -1515,16 +1551,25 @@ pub async fn get_workdir_file_diff(
     diff_opts.pathspec(file_path);
 
     let staged_lines: Arc<Mutex<Vec<(char, String)>>> = Arc::new(Mutex::new(Vec::new()));
-    if let Ok(staged_diff) = repo.diff_tree_to_index(head_tree.as_ref(), Some(&repo.index()?), Some(&mut diff_opts)) {
+    if let Ok(staged_diff) = repo.diff_tree_to_index(
+        head_tree.as_ref(),
+        Some(&repo.index()?),
+        Some(&mut diff_opts),
+    ) {
         let staged_lines_ref = Arc::clone(&staged_lines);
         let _ = staged_diff.foreach(
             &mut |_: git2::DiffDelta, _: f32| -> bool { true },
             None,
             Some(&mut |_: git2::DiffDelta, _: git2::DiffHunk| -> bool { true }),
-            Some(&mut |_: git2::DiffDelta, _: Option<git2::DiffHunk>, line: git2::DiffLine| -> bool {
+            Some(&mut |_: git2::DiffDelta,
+                       _: Option<git2::DiffHunk>,
+                       line: git2::DiffLine|
+             -> bool {
                 let origin = line.origin();
                 if origin == '+' || origin == '-' {
-                    let content = String::from_utf8_lossy(line.content()).trim_end_matches('\n').to_string();
+                    let content = String::from_utf8_lossy(line.content())
+                        .trim_end_matches('\n')
+                        .to_string();
                     staged_lines_ref.lock().unwrap().push((origin, content));
                 }
                 true
@@ -1533,13 +1578,40 @@ pub async fn get_workdir_file_diff(
     }
     let staged_entries = staged_lines.lock().unwrap().clone();
 
+    let file_status = swl!(repo.status_file(Path::new(file_path)))?;
+    if file_status.contains(git2::Status::WT_NEW) {
+        let abs_path = Path::new(path_string).join(file_path);
+        let content = match std::fs::read_to_string(&abs_path) {
+            Ok(c) => c,
+            Err(_) => String::new(),
+        };
+        let mut lines: Vec<WorkdirDiffLine> = Vec::new();
+        for (i, line) in content.lines().enumerate() {
+            let idx = i as i32;
+            lines.push(WorkdirDiffLine {
+                line_index: idx,
+                origin: "+".to_string(),
+                content: line.to_string(),
+                old_lineno: -1,
+                new_lineno: idx + 1,
+                is_staged: false,
+            });
+        }
+        let line_count = lines.len() as i32;
+        return Ok(WorkdirFileDiff {
+            file_path: file_path.clone(),
+            insertions: line_count,
+            deletions: 0,
+            is_binary: false,
+            lines,
+        });
+    }
+
     let mut diff_opts2 = DiffOptions::new();
     diff_opts2.pathspec(file_path);
 
-    let diff = swl!(repo.diff_tree_to_workdir_with_index(
-        head_tree.as_ref(),
-        Some(&mut diff_opts2),
-    ))?;
+    let diff =
+        swl!(repo.diff_tree_to_workdir_with_index(head_tree.as_ref(), Some(&mut diff_opts2),))?;
 
     let diff_stats = swl!(diff.stats())?;
     let mut staged_bag: HashMap<(char, String), i32> = HashMap::new();
@@ -1561,7 +1633,9 @@ pub async fn get_workdir_file_diff(
         },
         None,
         Some(&mut |_: git2::DiffDelta, hunk: git2::DiffHunk| -> bool {
-            let header = String::from_utf8_lossy(hunk.header()).trim_end().to_string();
+            let header = String::from_utf8_lossy(hunk.header())
+                .trim_end()
+                .to_string();
             let idx = line_index.fetch_add(1, Ordering::SeqCst);
             lines.lock().unwrap().push(WorkdirDiffLine {
                 line_index: idx,
@@ -1573,50 +1647,51 @@ pub async fn get_workdir_file_diff(
             });
             true
         }),
-        Some(&mut |_: git2::DiffDelta,
-                   _: Option<git2::DiffHunk>,
-                   line: git2::DiffLine|
-         -> bool {
-            let origin = match line.origin() {
-                '+' => "+".to_string(),
-                '-' => "-".to_string(),
-                ' ' => " ".to_string(),
-                _ => return true,
-            };
+        Some(
+            &mut |_: git2::DiffDelta, _: Option<git2::DiffHunk>, line: git2::DiffLine| -> bool {
+                let origin = match line.origin() {
+                    '+' => "+".to_string(),
+                    '-' => "-".to_string(),
+                    ' ' => " ".to_string(),
+                    _ => return true,
+                };
 
-            let content = String::from_utf8_lossy(line.content()).trim_end_matches('\n').to_string();
-            let idx = line_index.fetch_add(1, Ordering::SeqCst);
+                let content = String::from_utf8_lossy(line.content())
+                    .trim_end_matches('\n')
+                    .to_string();
+                let idx = line_index.fetch_add(1, Ordering::SeqCst);
 
-            let is_staged = if origin != " " {
-                let origin_char = origin.chars().next().unwrap_or(' ');
-                let key = (origin_char, content.clone());
-                let mut bag = staged_bag.lock().unwrap();
-                if let Some(count) = bag.get_mut(&key) {
-                    if *count > 0 {
-                        *count -= 1;
-                        true
+                let is_staged = if origin != " " {
+                    let origin_char = origin.chars().next().unwrap_or(' ');
+                    let key = (origin_char, content.clone());
+                    let mut bag = staged_bag.lock().unwrap();
+                    if let Some(count) = bag.get_mut(&key) {
+                        if *count > 0 {
+                            *count -= 1;
+                            true
+                        } else {
+                            false
+                        }
                     } else {
                         false
                     }
                 } else {
                     false
-                }
-            } else {
-                false
-            };
+                };
 
-            let mut lines_vec = lines.lock().unwrap();
-            lines_vec.push(WorkdirDiffLine {
-                line_index: idx,
-                origin,
-                content,
-                old_lineno: line.old_lineno().map(|n| n as i32).unwrap_or(-1),
-                new_lineno: line.new_lineno().map(|n| n as i32).unwrap_or(-1),
-                is_staged,
-            });
+                let mut lines_vec = lines.lock().unwrap();
+                lines_vec.push(WorkdirDiffLine {
+                    line_index: idx,
+                    origin,
+                    content,
+                    old_lineno: line.old_lineno().map(|n| n as i32).unwrap_or(-1),
+                    new_lineno: line.new_lineno().map(|n| n as i32).unwrap_or(-1),
+                    is_staged,
+                });
 
-            true
-        })
+                true
+            }
+        )
     ))?;
 
     let lines = lines.lock().unwrap().drain(..).collect();
@@ -1624,7 +1699,11 @@ pub async fn get_workdir_file_diff(
     _log(
         Arc::clone(&log_callback),
         LogType::WorkdirFileDiff,
-        format!("Workdir diff complete - {} insertions, {} deletions", diff_stats.insertions(), diff_stats.deletions()),
+        format!(
+            "Workdir diff complete - {} insertions, {} deletions",
+            diff_stats.insertions(),
+            diff_stats.deletions()
+        ),
     );
 
     Ok(WorkdirFileDiff {
@@ -1647,7 +1726,11 @@ pub async fn stage_file_lines(
     _log(
         Arc::clone(&log_callback),
         LogType::StageFileLines,
-        format!("Staging {} selected lines for {}", selected_line_indices.len(), file_path),
+        format!(
+            "Staging {} selected lines for {}",
+            selected_line_indices.len(),
+            file_path
+        ),
     );
 
     let repo = swl!(Repository::open(path_string))?;
@@ -1659,10 +1742,8 @@ pub async fn stage_file_lines(
 
     let mut diff_opts = DiffOptions::new();
     diff_opts.pathspec(file_path);
-    let diff = swl!(repo.diff_tree_to_workdir_with_index(
-        head_tree.as_ref(),
-        Some(&mut diff_opts),
-    ))?;
+    let diff =
+        swl!(repo.diff_tree_to_workdir_with_index(head_tree.as_ref(), Some(&mut diff_opts),))?;
 
     let selected_set: std::collections::HashSet<i32> = selected_line_indices.into_iter().collect();
     let diff_lines: Arc<Mutex<Vec<(i32, char, String)>>> = Arc::new(Mutex::new(Vec::new()));
@@ -1672,18 +1753,17 @@ pub async fn stage_file_lines(
         &mut |_: git2::DiffDelta, _: f32| -> bool { true },
         None,
         Some(&mut |_: git2::DiffDelta, _: git2::DiffHunk| -> bool { true }),
-        Some(&mut |_: git2::DiffDelta,
-                   _: Option<git2::DiffHunk>,
-                   line: git2::DiffLine|
-         -> bool {
-            let origin = line.origin();
-            if origin == '+' || origin == '-' || origin == ' ' {
-                let idx = idx_counter.fetch_add(1, Ordering::SeqCst);
-                let content = String::from_utf8_lossy(line.content()).to_string();
-                diff_lines.lock().unwrap().push((idx, origin, content));
+        Some(
+            &mut |_: git2::DiffDelta, _: Option<git2::DiffHunk>, line: git2::DiffLine| -> bool {
+                let origin = line.origin();
+                if origin == '+' || origin == '-' || origin == ' ' {
+                    let idx = idx_counter.fetch_add(1, Ordering::SeqCst);
+                    let content = String::from_utf8_lossy(line.content()).to_string();
+                    diff_lines.lock().unwrap().push((idx, origin, content));
+                }
+                true
             }
-            true
-        })
+        )
     ))?;
 
     let diff_lines = diff_lines.lock().unwrap().clone();
@@ -2010,15 +2090,14 @@ fn commit(
         if let Ok(mut head) = repo.head() {
             swl!(head.set_target(commit_id, message))?;
         } else {
-            let current_branch =
-                get_branch_name_priv(&repo).unwrap_or_else(|| {
-                    // On unborn branch, read HEAD's symbolic target to get the intended branch name
-                    repo.find_reference("HEAD")
-                        .ok()
-                        .and_then(|r| r.symbolic_target().map(|s| s.to_string()))
-                        .and_then(|s| s.strip_prefix("refs/heads/").map(|s| s.to_string()))
-                        .unwrap_or_else(|| "main".to_string())
-                });
+            let current_branch = get_branch_name_priv(&repo).unwrap_or_else(|| {
+                // On unborn branch, read HEAD's symbolic target to get the intended branch name
+                repo.find_reference("HEAD")
+                    .ok()
+                    .and_then(|r| r.symbolic_target().map(|s| s.to_string()))
+                    .and_then(|s| s.strip_prefix("refs/heads/").map(|s| s.to_string()))
+                    .unwrap_or_else(|| "main".to_string())
+            });
 
             swl!(repo.reference(
                 &format!("refs/heads/{}", current_branch),
@@ -2099,7 +2178,14 @@ fn update_submodules_priv(
         let mut submodule_opts = git2::SubmoduleUpdateOptions::new();
         submodule_opts.fetch(fetch_options);
 
-        swl!(submodule.update(true, Some(&mut submodule_opts)))?;
+        if let Err(e) = submodule.update(true, Some(&mut submodule_opts)) {
+            _log(
+                Arc::clone(&log_callback),
+                LogType::PullFromRepo,
+                format!("Skipping submodule '{}': {}", name, e.message()),
+            );
+            continue;
+        }
 
         if let Ok(sub_repo) = submodule.open() {
             swl!(sub_repo.checkout_head(Some(
@@ -2245,9 +2331,16 @@ pub async fn pull_changes(
         "Getting local directory".to_string(),
     );
 
+    let remote_name = repo
+        .remotes()
+        .ok()
+        .and_then(|r| r.get(0).map(|s| s.to_string()))
+        .unwrap_or_else(|| "origin".to_string());
+
     tokio::task::block_in_place(|| {
         pull_changes_priv(
             &repo,
+            &remote_name,
             &provider,
             &credentials,
             commit_signing_credentials,
@@ -2259,6 +2352,7 @@ pub async fn pull_changes(
 
 fn pull_changes_priv(
     repo: &Repository,
+    remote_name: &str,
     provider: &String,
     credentials: &(String, String),
     commit_signing_credentials: Option<(String, String)>,
@@ -2288,8 +2382,9 @@ fn pull_changes_priv(
         .shorthand()
         .ok_or_else(|| git2::Error::from_str("Could not determine branch name")))?;
 
-    let fetch_head = swl!(repo.find_reference("FETCH_HEAD"))?;
-    let fetch_commit = swl!(repo.reference_to_annotated_commit(&fetch_head))?;
+    let tracking_ref_name = format!("refs/remotes/{}/{}", remote_name, remote_branch);
+    let tracking_ref = swl!(repo.find_reference(&tracking_ref_name))?;
+    let fetch_commit = swl!(repo.reference_to_annotated_commit(&tracking_ref))?;
     let analysis = swl!(repo.merge_analysis(&[&fetch_commit]))?;
 
     if analysis.0.is_up_to_date() {
@@ -2319,8 +2414,8 @@ fn pull_changes_priv(
                     LogType::PullFromRepo,
                     "OK fast forward".to_string(),
                 );
-                if get_staged_file_paths_priv(&repo, &log_callback).is_empty()
-                    && get_uncommitted_file_paths_priv(&repo, false, &log_callback).is_empty()
+                if get_staged_file_paths_priv(&repo, &log_callback)?.is_empty()
+                    && get_uncommitted_file_paths_priv(&repo, false, &log_callback)?.is_empty()
                 {
                     swl!(fast_forward(&repo, &mut r, &fetch_commit, &log_callback))?;
                     swl!(update_submodules_priv(
@@ -2373,6 +2468,16 @@ fn pull_changes_priv(
             LogType::PullFromRepo,
             "Pulling changes".to_string(),
         );
+        if !get_staged_file_paths_priv(&repo, &log_callback)?.is_empty()
+            || !get_uncommitted_file_paths_priv(&repo, false, &log_callback)?.is_empty()
+        {
+            _log(
+                Arc::clone(&log_callback),
+                LogType::PullFromRepo,
+                "Uncommitted changes exist, skipping normal merge".to_string(),
+            );
+            return Ok(Some(false));
+        }
         let head_commit = swl!(repo.reference_to_annotated_commit(&repo.head()?))?;
         _log(
             Arc::clone(&log_callback),
@@ -2394,7 +2499,9 @@ fn pull_changes_priv(
                 "Merge conflicts detected".to_string(),
             );
 
-            return Ok(Some(false));
+            return Err(git2::Error::from_str(
+                "Merge conflicts detected during pull. Push your local changes first to trigger the merge conflict UI, then resolve conflicts from there.",
+            ));
         }
         let result_tree = swl!(repo.find_tree(swl!(idx.write_tree_to(&repo))?))?;
         let msg = format!("Merge: {} into {}", fetch_commit.id(), head_commit.id());
@@ -2447,18 +2554,20 @@ pub async fn download_changes(
         &log_callback
     ))?;
 
-    if tokio::task::block_in_place(|| {
+    match tokio::task::block_in_place(|| {
         pull_changes_priv(
             &repo,
+            &remote,
             &provider,
             &credentials,
             commit_signing_credentials,
             sync_callback,
             &log_callback,
         )
-    }) == Ok(Some(false))
-    {
-        return Ok(Some(false));
+    }) {
+        Ok(Some(false)) => return Ok(Some(false)),
+        Err(e) => return Err(e),
+        _ => {}
     }
 
     Ok(Some(true))
@@ -2784,10 +2893,15 @@ pub async fn stage_file_paths(
     }
 
     for path in &paths {
+        let _ = index.conflict_remove(Path::new(path));
+    }
+
+    for path in &paths {
         if let Ok(mut sm) = repo.find_submodule(path) {
-            let sm_repo = swl!(sm.open())?;
-            swl!(sm_repo.index()?.write())?;
-            swl!(sm.add_to_index(false))?;
+            if let Ok(sm_repo) = sm.open() {
+                swl!(sm_repo.index()?.write())?;
+                swl!(sm.add_to_index(false))?;
+            }
         }
     }
 
@@ -2874,9 +2988,11 @@ pub async fn get_recommended_action(
         let mut found = false;
 
         if let Ok(tracking_ref) = repo.find_reference(&tracking_ref_name) {
+            let target_ref_name = format!("refs/heads/{}", &branch_name);
             for r in remote_refs {
-                if tracking_ref.target() == Some(r.oid()) {
+                if r.name() == target_ref_name.as_str() && tracking_ref.target() == Some(r.oid()) {
                     found = true;
+                    break;
                 }
             }
         } else {
@@ -2968,9 +3084,7 @@ pub async fn commit_changes(
     let repo = swl!(Repository::open(&path_string))?;
     set_author(&repo, &author);
 
-    if repo.state() == RepositoryState::Rebase
-        || repo.state() == RepositoryState::RebaseMerge
-    {
+    if repo.state() == RepositoryState::Rebase || repo.state() == RepositoryState::RebaseMerge {
         _log(
             Arc::clone(&log_callback),
             LogType::PushToRepo,
@@ -2995,7 +3109,8 @@ pub async fn commit_changes(
                     _log(
                         Arc::clone(&log_callback),
                         LogType::PushToRepo,
-                        "Subsequent rebase step has conflicts — leaving rebase in progress".to_string(),
+                        "Subsequent rebase step has conflicts — leaving rebase in progress"
+                            .to_string(),
                     );
                     return Ok(());
                 }
@@ -3021,11 +3136,40 @@ pub async fn commit_changes(
     );
 
     let mut index = swl!(repo.index())?;
-    let updated_tree_oid = if !index.has_conflicts() {
-        Some(swl!(index.write_tree())?)
-    } else {
-        None
-    };
+    if index.has_conflicts() {
+        let unmerged: Vec<String> = index
+            .conflicts()
+            .ok()
+            .map(|iter| {
+                iter.filter_map(|c| c.ok())
+                    .filter_map(|c| {
+                        c.our
+                            .or(c.their)
+                            .or(c.ancestor)
+                            .map(|e| String::from_utf8_lossy(&e.path).into_owned())
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        _log(
+            Arc::clone(&log_callback),
+            LogType::PushToRepo,
+            format!(
+                "Index has unresolved conflicts, cannot commit: {:?}",
+                unmerged
+            ),
+        );
+        let suffix = if unmerged.is_empty() {
+            String::new()
+        } else {
+            format!(" Unmerged paths: {}", unmerged.join(", "))
+        };
+        return Err(git2::Error::from_str(&format!(
+            "Cannot commit: unresolved merge conflicts exist. Please resolve conflicts first.{}",
+            suffix
+        )));
+    }
+    let updated_tree_oid = swl!(index.write_tree())?;
 
     _log(
         Arc::clone(&log_callback),
@@ -3047,8 +3191,7 @@ pub async fn commit_changes(
         None => vec![],
     };
 
-    let tree_oid = updated_tree_oid.unwrap_or_else(|| index.write_tree_to(&repo).unwrap());
-    let tree = swl!(repo.find_tree(tree_oid))?;
+    let tree = swl!(repo.find_tree(updated_tree_oid))?;
 
     swl!(commit(
         &repo,
@@ -3094,9 +3237,9 @@ pub async fn upload_changes(
     );
 
     let uncommitted_file_paths: Vec<(String, i32)> =
-        get_staged_file_paths_priv(&repo, &log_callback)
+        get_staged_file_paths_priv(&repo, &log_callback)?
             .into_iter()
-            .chain(get_uncommitted_file_paths_priv(&repo, true, &log_callback))
+            .chain(get_uncommitted_file_paths_priv(&repo, true, &log_callback)?)
             .collect();
 
     let mut index = swl!(repo.index())?;
@@ -3142,24 +3285,31 @@ pub async fn upload_changes(
 
     for path in &paths {
         if let Ok(mut sm) = repo.find_submodule(path) {
-            let sm_repo = swl!(sm.open())?;
-            swl!(sm_repo.index()?.write())?;
-            swl!(sm.add_to_index(false))?;
+            if let Ok(sm_repo) = sm.open() {
+                swl!(sm_repo.index()?.write())?;
+                swl!(sm.add_to_index(false))?;
+            }
         }
     }
 
     swl!(index.write())?;
 
-    let updated_tree_oid = if !index.has_conflicts() {
-        Some(swl!(index.write_tree())?)
-    } else {
-        None
-    };
+    if index.has_conflicts() {
+        _log(
+            Arc::clone(&log_callback),
+            LogType::PushToRepo,
+            "Index has unresolved conflicts, skipping commit".to_string(),
+        );
+        flutter_rust_bridge::spawn(async move {
+            merge_conflict_callback().await;
+        });
+        return Ok(Some(false));
+    }
+    let updated_tree_oid = swl!(index.write_tree())?;
 
-    let should_commit = match (initial_tree_oid, updated_tree_oid) {
-        (Some(old), Some(new)) => old != new,
-        (None, None) => true,
-        _ => true,
+    let should_commit = match initial_tree_oid {
+        Some(old) => old != updated_tree_oid,
+        None => true,
     };
 
     // Only commit if the index has actually changed
@@ -3184,8 +3334,7 @@ pub async fn upload_changes(
             None => vec![],
         };
 
-        let tree_oid = updated_tree_oid.unwrap_or_else(|| index.write_tree_to(&repo).unwrap());
-        let tree = swl!(repo.find_tree(tree_oid))?;
+        let tree = swl!(repo.find_tree(updated_tree_oid))?;
 
         swl!(commit(
             &repo,
@@ -3478,8 +3627,8 @@ pub async fn upload_and_overwrite(
         swl!(rebase.abort())?;
     }
 
-    if !get_staged_file_paths_priv(&repo, &log_callback).is_empty()
-        || !get_uncommitted_file_paths_priv(&repo, true, &log_callback).is_empty()
+    if !get_staged_file_paths_priv(&repo, &log_callback)?.is_empty()
+        || !get_uncommitted_file_paths_priv(&repo, true, &log_callback)?.is_empty()
     {
         let mut index = swl!(repo.index())?;
 
@@ -3662,12 +3811,6 @@ pub async fn download_and_overwrite(
         "Force fetching changes".to_string(),
     );
 
-    swl!(remote.fetch::<&str>(&[], Some(&mut fetch_options), None))?;
-
-    let fetch_commit = swl!(repo
-        .find_reference("FETCH_HEAD")
-        .and_then(|r| repo.reference_to_annotated_commit(&r)))?;
-
     let git_dir = repo.path();
     let rebase_head_path = git_dir.join("rebase-merge").join("head-name");
     let refname = if rebase_head_path.exists() {
@@ -3724,6 +3867,14 @@ pub async fn download_and_overwrite(
 
         format!("refs/heads/{}", branch_name)
     };
+
+    swl!(remote.fetch::<&str>(&[], Some(&mut fetch_options), None))?;
+
+    let branch = refname.strip_prefix("refs/heads/").unwrap_or("master");
+    let tracking_ref_name = format!("refs/remotes/{}/{}", remote_name, branch);
+    let fetch_commit = swl!(repo
+        .find_reference(&tracking_ref_name)
+        .and_then(|r| repo.reference_to_annotated_commit(&r)))?;
 
     let mut reference = swl!(repo.find_reference(&refname))?;
     swl!(reference.set_target(fetch_commit.id(), "force pull"))?;
@@ -3788,7 +3939,7 @@ pub async fn discard_changes(
 pub async fn get_conflicting(
     path_string: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<(String, ConflictType)> {
+) -> Result<Vec<(String, ConflictType)>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -3796,15 +3947,12 @@ pub async fn get_conflicting(
         LogType::ConflictingFiles,
         "Getting local directory".to_string(),
     );
-    let repo = match Repository::open(path_string) {
-        Ok(repo) => repo,
-        Err(_) => return Vec::new(),
-    };
+    let repo = swl!(Repository::open(path_string))?;
 
-    let index = repo.index().unwrap();
+    let index = swl!(repo.index())?;
     let mut conflicts = Vec::new();
 
-    index.conflicts().unwrap().for_each(|conflict| {
+    swl!(index.conflicts())?.for_each(|conflict| {
         if let Ok(conflict) = conflict {
             if let Some(ours) = conflict.our {
                 conflicts.push((
@@ -3821,13 +3969,13 @@ pub async fn get_conflicting(
         }
     });
 
-    conflicts
+    Ok(conflicts)
 }
 
 pub async fn get_staged_file_paths(
     path_string: &str,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -3835,10 +3983,7 @@ pub async fn get_staged_file_paths(
         LogType::StagedFiles,
         "Getting local directory".to_string(),
     );
-    let repo = match Repository::open(path_string) {
-        Ok(repo) => repo,
-        Err(_) => return Vec::new(),
-    };
+    let repo = swl!(Repository::open(path_string))?;
 
     get_staged_file_paths_priv(&repo, &log_callback)
 }
@@ -3846,7 +3991,7 @@ pub async fn get_staged_file_paths(
 fn get_staged_file_paths_priv(
     repo: &Repository,
     log_callback: &Arc<impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static>,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     _log(
         Arc::clone(&log_callback),
         LogType::StagedFiles,
@@ -3858,7 +4003,7 @@ fn get_staged_file_paths_priv(
     opts.include_ignored(false);
     opts.update_index(true);
     opts.show(git2::StatusShow::Index);
-    let statuses = repo.statuses(Some(&mut opts)).unwrap();
+    let statuses = swl!(repo.statuses(Some(&mut opts)))?;
 
     let mut file_paths = Vec::new();
 
@@ -3895,13 +4040,13 @@ fn get_staged_file_paths_priv(
         }
     }
 
-    file_paths
+    Ok(file_paths)
 }
 
 pub async fn get_uncommitted_file_paths(
     path_string: &str,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -3909,10 +4054,7 @@ pub async fn get_uncommitted_file_paths(
         LogType::UncommittedFiles,
         "Getting local directory".to_string(),
     );
-    let repo = match Repository::open(path_string) {
-        Ok(repo) => repo,
-        Err(_) => return Vec::new(),
-    };
+    let repo = swl!(Repository::open(path_string))?;
 
     _log(
         Arc::clone(&log_callback),
@@ -3927,13 +4069,13 @@ fn get_uncommitted_file_paths_priv(
     repo: &Repository,
     include_untracked: bool,
     log_callback: &Arc<impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static>,
-) -> Vec<(String, i32)> {
+) -> Result<Vec<(String, i32)>, git2::Error> {
     let mut opts = StatusOptions::new();
     opts.include_untracked(include_untracked);
     opts.include_ignored(false);
     opts.update_index(true);
     opts.show(git2::StatusShow::Workdir);
-    let statuses = repo.statuses(Some(&mut opts)).unwrap();
+    let statuses = swl!(repo.statuses(Some(&mut opts)))?;
 
     let mut file_paths = Vec::new();
 
@@ -3977,7 +4119,7 @@ fn get_uncommitted_file_paths_priv(
         }
     }
 
-    file_paths
+    Ok(file_paths)
 }
 
 fn has_local_changes_priv(
@@ -4112,10 +4254,10 @@ pub async fn generate_ssh_key(
 pub async fn get_branch_name(
     path_string: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Option<String> {
+) -> Result<Option<String>, git2::Error> {
     let log_callback = Arc::new(log);
 
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     let branch_name = get_branch_name_priv(&repo);
 
     if branch_name == None {
@@ -4126,7 +4268,7 @@ pub async fn get_branch_name(
         );
     }
 
-    return branch_name;
+    Ok(branch_name)
 }
 
 fn get_branch_name_priv(repo: &Repository) -> Option<String> {
@@ -4152,19 +4294,19 @@ pub async fn get_branch_names(
     path_string: &String,
     remote: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<String> {
+) -> Result<Vec<String>, git2::Error> {
     let log_callback = Arc::new(log);
     _log(
         Arc::clone(&log_callback),
         LogType::BranchNames,
         "Getting local directory".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
 
     let mut local_set = std::collections::HashSet::new();
     let mut remote_set = std::collections::HashSet::new();
 
-    let local_branches = repo.branches(Some(BranchType::Local)).unwrap();
+    let local_branches = swl!(repo.branches(Some(BranchType::Local)))?;
     for branch_result in local_branches {
         if let Ok((branch, _)) = branch_result {
             if let Some(name) = branch.name().ok().flatten() {
@@ -4173,7 +4315,7 @@ pub async fn get_branch_names(
         }
     }
 
-    let remote_branches = repo.branches(Some(BranchType::Remote)).unwrap();
+    let remote_branches = swl!(repo.branches(Some(BranchType::Remote)))?;
     for branch_result in remote_branches {
         if let Ok((branch, _)) = branch_result {
             if let Some(name) = branch.name().ok().flatten() {
@@ -4199,7 +4341,7 @@ pub async fn get_branch_names(
         all_names.insert(name.clone());
     }
 
-    all_names
+    Ok(all_names
         .into_iter()
         .map(|name| {
             let is_local = local_set.contains(&name);
@@ -4213,7 +4355,7 @@ pub async fn get_branch_names(
             };
             format!("{}======={}", name, location)
         })
-        .collect()
+        .collect())
 }
 
 pub async fn set_remote_url(
@@ -4229,7 +4371,7 @@ pub async fn set_remote_url(
         LogType::SetRemoteUrl,
         "Getting local directory".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     repo.remote_set_url(&remote_name, &new_remote_url)?;
 
     Ok(())
@@ -4238,7 +4380,7 @@ pub async fn set_remote_url(
 pub async fn list_remotes(
     path_string: &String,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
-) -> Vec<String> {
+) -> Result<Vec<String>, git2::Error> {
     let log_callback = Arc::new(log);
 
     _log(
@@ -4246,12 +4388,12 @@ pub async fn list_remotes(
         LogType::ListRemotes,
         "Listing remotes".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
-    let remotes = repo.remotes().unwrap();
-    remotes
+    let repo = swl!(Repository::open(path_string))?;
+    let remotes = swl!(repo.remotes())?;
+    Ok(remotes
         .iter()
         .filter_map(|r| r.map(|s| s.to_string()))
-        .collect()
+        .collect())
 }
 
 pub async fn init_repository(
@@ -4265,7 +4407,9 @@ pub async fn init_repository(
         LogType::InitRepo,
         "Initialising repository".to_string(),
     );
-    Repository::init(Path::new(path_string))?;
+    let mut opts = git2::RepositoryInitOptions::new();
+    opts.initial_head("main");
+    Repository::init_opts(Path::new(path_string), &opts)?;
     Ok(())
 }
 
@@ -4300,7 +4444,7 @@ pub async fn add_remote(
         LogType::AddRemote,
         "Adding remote".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     repo.remote(&remote_name, &remote_url)?;
 
     Ok(())
@@ -4318,7 +4462,7 @@ pub async fn delete_remote(
         LogType::DeleteRemote,
         "Deleting remote".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     repo.remote_delete(&remote_name)?;
 
     Ok(())
@@ -4337,7 +4481,7 @@ pub async fn rename_remote(
         LogType::RenameRemote,
         "Renaming remote".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     let _problematic_refspecs = repo.remote_rename(&old_name, &new_name)?;
 
     Ok(())
@@ -4356,7 +4500,7 @@ pub async fn checkout_branch(
         LogType::CheckoutBranch,
         "Getting local directory".to_string(),
     );
-    let repo = Repository::open(Path::new(path_string)).unwrap();
+    let repo = swl!(Repository::open(path_string))?;
     let branch = match repo.find_branch(&branch_name, git2::BranchType::Local) {
         Ok(branch) => branch,
         Err(e) => {
@@ -4531,6 +4675,17 @@ pub async fn delete_branch(
     Ok(())
 }
 
+pub async fn recreate_deleted_index(path_string: String) -> Result<(), git2::Error> {
+    let repo = swl!(Repository::open(&path_string))?;
+    let head = match repo.head() {
+        Ok(h) => h,
+        Err(_) => return Ok(()), // Empty repo, no HEAD to reset to
+    };
+    let commit = swl!(head.peel_to_commit())?;
+    swl!(repo.reset(commit.as_object(), ResetType::Mixed, None))?;
+    Ok(())
+}
+
 pub async fn prune_corrupted_loose_objects(path_string: String) -> Result<(), git2::Error> {
     let repo = swl!(Repository::open(&path_string))?;
     let odb = swl!(repo.odb())?;
@@ -4680,10 +4835,7 @@ pub async fn checkout_commit(
     _log(
         Arc::clone(&log_callback),
         LogType::CheckoutCommit,
-        format!(
-            "HEAD is now at {}",
-            &commit_sha[..7.min(commit_sha.len())]
-        ),
+        format!("HEAD is now at {}", &commit_sha[..7.min(commit_sha.len())]),
     );
 
     Ok(())
@@ -4753,10 +4905,7 @@ pub async fn revert_commit(
     let signature = swl!(repo.signature())?;
     let head_commit = swl!(repo.head()?.peel_to_commit())?;
 
-    let message = format!(
-        "Revert \"{}\"",
-        commit.message().unwrap_or("").trim()
-    );
+    let message = format!("Revert \"{}\"", commit.message().unwrap_or("").trim());
 
     swl!(repo.commit(
         Some("HEAD"),
@@ -4782,6 +4931,8 @@ pub async fn revert_commit(
 pub async fn amend_commit(
     path_string: &String,
     new_message: &String,
+    author_name: Option<String>,
+    author_email: Option<String>,
     commit_signing_credentials: Option<(String, String)>,
     log: impl Fn(LogType, String) -> DartFnFuture<()> + Send + Sync + 'static,
 ) -> Result<(), git2::Error> {
@@ -4797,12 +4948,15 @@ pub async fn amend_commit(
 
     let head_commit = swl!(repo.head()?.peel_to_commit())?;
     let tree = swl!(head_commit.tree())?;
-    let parents: Vec<git2::Commit> = head_commit
-        .parents()
-        .collect();
+    let parents: Vec<git2::Commit> = head_commit.parents().collect();
     let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
 
-    let signature = swl!(repo.signature())?;
+    let signature = if let (Some(name), Some(email)) = (&author_name, &author_email) {
+        let sig = repo.signature()?;
+        git2::Signature::new(name, email, &sig.when())?
+    } else {
+        repo.signature()?
+    };
 
     let new_oid = commit(
         &repo,
@@ -4924,7 +5078,9 @@ pub async fn cherry_pick_commit(
         let mut checkout_builder = git2::build::CheckoutBuilder::new();
         checkout_builder.force();
 
-        tokio::task::block_in_place(|| swl!(repo.checkout_tree(&object, Some(&mut checkout_builder))))?;
+        tokio::task::block_in_place(|| {
+            swl!(repo.checkout_tree(&object, Some(&mut checkout_builder)))
+        })?;
         swl!(repo.set_head(&format!("refs/heads/{}", target_branch)))?;
     }
 
@@ -5000,7 +5156,9 @@ pub async fn squash_commits(
     let oldest_commit = swl!(repo.find_commit(oldest_oid))?;
 
     if oldest_commit.parent_count() == 0 {
-        return Err(git2::Error::from_str("Cannot squash: oldest selected commit has no parent"));
+        return Err(git2::Error::from_str(
+            "Cannot squash: oldest selected commit has no parent",
+        ));
     }
 
     let parent_commit = swl!(oldest_commit.parent(0))?;

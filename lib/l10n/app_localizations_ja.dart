@@ -12,6 +12,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dismiss => '閉じる';
 
   @override
+  String get dontShowAgain => '今後表示しない';
+
+  @override
   String get skip => 'スキップ';
 
   @override
@@ -48,13 +51,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rename => '名前変更';
 
   @override
-  String get renameDescription => 'Rename the selected file or folder';
+  String get renameDescription => '選択したファイルまたはフォルダの名前を変更';
 
   @override
-  String get selectAllDescription => 'Select all visible files and folders';
+  String get selectAllDescription => '表示中のファイルとフォルダをすべて選択';
 
   @override
-  String get deselectAllDescription => 'Deselect all selected files and folders';
+  String get deselectAllDescription => '選択をすべて解除';
 
   @override
   String get add => '追加';
@@ -138,97 +141,88 @@ class AppLocalizationsJa extends AppLocalizations {
   String get restorePurchase => '購入を復元';
 
   @override
-  String get verifyGhSponsorTitle => 'GitHubスポンサーシップを確認';
+  String get premiumStoreOnlyBanner => 'ストア版限定 — App StoreまたはPlay Storeで入手';
 
   @override
-  String get verifyGhSponsorMsg => 'GitHubスポンサーの方は、プレミアム機能に無料でアクセスできます。スポンサーのステータスを確認するため、GitHubで認証を行ってください。';
+  String get premiumMultiRepoTitle => 'マルチリポジトリ管理';
 
   @override
-  String get verifyGhSponsorNote => '注意：新しいスポンサーシップがアプリに反映されるまで、最大1日かかる場合があります。';
+  String get premiumMultiRepoSubtitle => '1つのアプリですべてのリポジトリ。\nそれぞれに独自の認証情報と設定。';
 
   @override
-  String get premiumStoreOnlyBanner => 'Store version only — Get it on the App Store or Play Store';
+  String get premiumUnlimitedContainers => '無制限のコンテナ';
 
   @override
-  String get premiumMultiRepoTitle => 'Manage Multiple Repos';
+  String get premiumIndependentAuth => 'リポジトリごとに独立した認証';
 
   @override
-  String get premiumMultiRepoSubtitle => 'One app. All your repositories.\nEach with its own credentials and settings.';
+  String get premiumAutoAddSubmodules => 'サブモジュールを自動追加';
 
   @override
-  String get premiumUnlimitedContainers => 'Unlimited containers';
+  String get premiumEnhancedSyncSubtitle => 'iOSでの自動バックグラウンド同期。\n最短1分間隔。';
 
   @override
-  String get premiumIndependentAuth => 'Independent auth per repo';
+  String get premiumSyncPerMinute => '1分ごとの同期';
 
   @override
-  String get premiumAutoAddSubmodules => 'Auto-add submodules';
+  String get premiumServerTriggered => 'サーバープッシュ通知';
 
   @override
-  String get premiumEnhancedSyncSubtitle => 'Automated background sync on iOS.\nAs low as once per minute.';
+  String get premiumWorksAppClosed => 'アプリ終了時も動作';
 
   @override
-  String get premiumSyncPerMinute => 'Sync as often as every minute';
-
-  @override
-  String get premiumServerTriggered => 'Server push notifications';
-
-  @override
-  String get premiumWorksAppClosed => 'Works even when app is closed';
-
-  @override
-  String get premiumReliableDelivery => 'Reliable, on-schedule delivery';
+  String get premiumReliableDelivery => '確実な定期配信';
 
   @override
   String get premiumGitLfsTitle => 'Git LFS';
 
   @override
-  String get premiumGitLfsSubtitle => 'Full support for Git Large File Storage.\nSync repos with large binary files effortlessly.';
+  String get premiumGitLfsSubtitle => 'Git LFSを完全サポート。\n大容量バイナリファイルも簡単に同期。';
 
   @override
-  String get premiumFullLfsSupport => 'Full Git LFS support';
+  String get premiumFullLfsSupport => 'Git LFS完全サポート';
 
   @override
-  String get premiumTrackLargeFiles => 'Track large binary files';
+  String get premiumTrackLargeFiles => '大容量バイナリファイルを追跡';
 
   @override
-  String get premiumAutoLfsPullPush => 'Automatic LFS pull/push';
+  String get premiumAutoLfsPullPush => 'LFSプル/プッシュ自動実行';
 
   @override
-  String get premiumGitFiltersTitle => 'Git Filters';
+  String get premiumGitFiltersTitle => 'Gitフィルター';
 
   @override
-  String get premiumGitFiltersSubtitle => 'Support for git filters including git-lfs,\ngit-crypt, and more coming soon.';
+  String get premiumGitFiltersSubtitle => 'git-lfsやgit-cryptなどのGitフィルターに対応。\nさらに追加予定。';
 
   @override
-  String get premiumGitLfsFilter => 'git-lfs filter';
+  String get premiumGitLfsFilter => 'git-lfsフィルター';
 
   @override
-  String get premiumGitCryptFilter => 'git-crypt filter';
+  String get premiumGitCryptFilter => 'git-cryptフィルター';
 
   @override
-  String get premiumMoreFiltersSoon => 'More filters coming soon';
+  String get premiumMoreFiltersSoon => 'さらにフィルター追加予定';
 
   @override
-  String get premiumGitHooksTitle => 'Git Hooks';
+  String get premiumGitHooksTitle => 'Gitフック';
 
   @override
-  String get premiumGitHooksSubtitle => 'Run pre-commit hooks automatically\nbefore every sync.';
+  String get premiumGitHooksSubtitle => '毎回の同期前にpre-commitフックを自動実行。';
 
   @override
-  String get premiumHookTrailingWhitespace => 'trailing-whitespace';
+  String get premiumHookTrailingWhitespace => '末尾の空白チェック';
 
   @override
-  String get premiumHookEndOfFileFixer => 'end-of-file-fixer';
+  String get premiumHookEndOfFileFixer => 'ファイル末尾修正';
 
   @override
-  String get premiumHookCheckYamlJson => 'check-yaml / check-json';
+  String get premiumHookCheckYamlJson => 'YAML/JSONチェック';
 
   @override
-  String get premiumHookMixedLineEnding => 'mixed-line-ending';
+  String get premiumHookMixedLineEnding => '改行コード統一';
 
   @override
-  String get premiumHookDetectPrivateKey => 'detect-private-key';
+  String get premiumHookDetectPrivateKey => '秘密鍵の検出';
 
   @override
   String get switchToClientMode => 'クライアントモードに切り替え…';
@@ -237,7 +231,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get switchToSyncMode => '同期モードに切り替え…';
 
   @override
-  String get defaultTo => 'Default to';
+  String get defaultTo => 'デフォルト設定';
 
   @override
   String get clientMode => 'クライアントモード';
@@ -363,13 +357,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get abortMerge => 'マージを中止';
 
   @override
-  String get resolveLater => 'Resolve Later';
+  String get resolveLater => '後で解決';
 
   @override
   String get keepChanges => '変更を保持';
 
   @override
-  String get local => 'ローカル';
+  String get current => '現在の';
 
   @override
   String get both => '両方';
@@ -378,31 +372,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get remote => 'リモート';
 
   @override
+  String get incoming => '受信';
+
+  @override
   String get merge => 'マージ';
 
   @override
-  String get resolve => 'Resolve';
+  String get resolve => '解決';
 
   @override
   String get merging => 'マージ中…';
 
   @override
-  String get resolving => 'Resolving…';
+  String get resolving => '解決中…';
 
   @override
-  String get clearSelection => 'Clear Selection';
+  String get clearSelection => '選択をクリア';
 
   @override
-  String get keepSelected => 'Keep Selected';
+  String get keepSelected => '選択を保持';
 
   @override
-  String get resolveAll => 'Resolve All';
+  String get resolveAll => 'すべて解決';
 
   @override
-  String get allLocal => 'All Local';
+  String get allCurrent => '現在のすべて';
 
   @override
-  String get allRemote => 'All Remote';
+  String get allIncoming => '受信のすべて';
 
   @override
   String get iosClearDataTitle => '新規インストールですか？';
@@ -437,7 +434,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get setUp => 'セットアップ';
 
   @override
-  String get welcomeSetupPrompt => 'Would you like to go through a quick setup to get started?';
+  String get welcomeSetupPrompt => 'クイックセットアップを実行しますか？';
 
   @override
   String get welcomePositive => '開始する';
@@ -464,301 +461,346 @@ class AppLocalizationsJa extends AppLocalizations {
   String get goToSettings => '設定へ移動';
 
   @override
-  String get onboardingSyncSettingsTitle => 'Sync Settings';
+  String get onboardingSyncSettingsTitle => '同期設定';
 
   @override
-  String get onboardingSyncSettingsSubtitle => 'Choose how to keep your repos in sync.';
+  String get onboardingSyncSettingsSubtitle => 'リポジトリの同期方法を選択します';
 
   @override
-  String get onboardingAppSyncFeatureOpen => 'Trigger sync on app open';
+  String get onboardingAppSyncFeatureOpen => 'アプリ起動時に同期';
 
   @override
-  String get onboardingAppSyncFeatureClose => 'Trigger sync on app close';
+  String get onboardingAppSyncFeatureClose => 'アプリ終了時に同期';
 
   @override
-  String get onboardingAppSyncFeatureSelect => 'Select which apps to monitor';
+  String get onboardingAppSyncFeatureSelect => '監視するアプリを選択';
 
   @override
-  String get onboardingScheduledSyncFeatureFreq => 'Set your preferred sync frequency';
+  String get onboardingScheduledSyncFeatureFreq => '同期頻度を設定';
 
   @override
-  String get onboardingScheduledSyncFeatureCustom => 'Choose custom intervals on Android';
+  String get onboardingScheduledSyncFeatureCustom => 'Androidでカスタム間隔を選択';
 
   @override
-  String get onboardingScheduledSyncFeatureBg => 'Works in the background';
+  String get onboardingScheduledSyncFeatureBg => 'バックグラウンドで動作';
 
   @override
-  String get onboardingQuickSyncFeatureTile => 'Sync via Quick Settings tile';
+  String get onboardingQuickSyncFeatureTile => 'クイック設定タイルで同期';
 
   @override
-  String get onboardingQuickSyncFeatureShortcut => 'Sync via app shortcuts';
+  String get onboardingQuickSyncFeatureShortcut => 'アプリショートカットで同期';
 
   @override
-  String get onboardingQuickSyncFeatureWidget => 'Sync via home screen widget';
+  String get onboardingQuickSyncFeatureWidget => 'ホーム画面ウィジェットで同期';
 
   @override
-  String get onboardingOtherSyncFeatureAndroid => 'Android intents';
+  String get onboardingOtherSyncFeatureAndroid => 'Androidインテント';
 
   @override
-  String get onboardingOtherSyncFeatureIos => 'iOS intents';
+  String get onboardingOtherSyncFeatureIos => 'iOSインテント';
 
   @override
-  String get onboardingOtherSyncDescription => 'Explore additional sync methods for your platform';
+  String get onboardingOtherSyncDescription => 'プラットフォームのその他の同期方法を確認';
 
   @override
-  String get onboardingTapToConfigure => 'Tap to configure';
+  String get onboardingTapToConfigure => 'タップして設定';
 
   @override
-  String get showcaseGlobalSettingsTitle => 'Global Settings';
+  String get showcaseGlobalSettingsTitle => 'グローバル設定';
 
   @override
-  String get showcaseGlobalSettingsSubtitle => 'Your app-wide preferences and tools.';
+  String get showcaseGlobalSettingsSubtitle => 'アプリ全体の設定とツール';
 
   @override
-  String get showcaseGlobalSettingsFeatureTheme => 'Adjust theme, language, and display options';
+  String get showcaseGlobalSettingsFeatureTheme => 'テーマ、言語、表示オプションを調整';
 
   @override
-  String get showcaseGlobalSettingsFeatureBackup => 'Back up or restore your configuration';
+  String get showcaseGlobalSettingsFeatureBackup => '設定のバックアップと復元';
 
   @override
-  String get showcaseGlobalSettingsFeatureSetup => 'Restart the guided setup or UI tour';
+  String get showcaseGlobalSettingsFeatureSetup => 'ガイド付きセットアップやUIツアーを再開';
 
   @override
-  String get showcaseSyncProgressTitle => 'Sync Status';
+  String get showcaseSyncProgressTitle => '同期ステータス';
 
   @override
-  String get showcaseSyncProgressSubtitle => 'See what\'s happening at a glance.';
+  String get showcaseSyncProgressSubtitle => '状況をひと目で確認';
 
   @override
-  String get showcaseSyncProgressFeatureWatch => 'Watch active sync operations in real time';
+  String get showcaseSyncProgressFeatureWatch => '同期操作をリアルタイムで表示';
 
   @override
-  String get showcaseSyncProgressFeatureConfirm => 'Confirms when a sync completes successfully';
+  String get showcaseSyncProgressFeatureConfirm => '同期完了を通知';
 
   @override
-  String get showcaseSyncProgressFeatureErrors => 'Tap to view errors or open the log viewer';
+  String get showcaseSyncProgressFeatureErrors => 'タップしてエラー表示またはログビューアを開く';
 
   @override
-  String get showcaseAddMoreTitle => 'Your Containers';
+  String get showcaseAddMoreTitle => 'コンテナ';
 
   @override
-  String get showcaseAddMoreSubtitle => 'Manage multiple repositories in one place.';
+  String get showcaseAddMoreSubtitle => '複数のリポジトリを一元管理';
 
   @override
-  String get showcaseAddMoreFeatureSwitch => 'Switch between repo containers instantly';
+  String get showcaseAddMoreFeatureSwitch => 'リポジトリコンテナを即座に切り替え';
 
   @override
-  String get showcaseAddMoreFeatureManage => 'Rename or delete containers as needed';
+  String get showcaseAddMoreFeatureManage => 'コンテナの名前変更や削除';
 
   @override
-  String get showcaseAddMoreFeaturePremium => 'Add more containers with Premium';
+  String get showcaseAddMoreFeaturePremium => 'プレミアムでコンテナを追加';
 
   @override
-  String get showcaseControlTitle => 'Sync Controls';
+  String get showcaseControlTitle => '同期コントロール';
 
   @override
-  String get showcaseControlSubtitle => 'Your hands-on sync and commit tools.';
+  String get showcaseControlSubtitle => '同期とコミットのツール';
 
   @override
-  String get showcaseControlFeatureSync => 'Trigger a manual sync with one tap';
+  String get showcaseControlFeatureSync => 'ワンタップで手動同期';
 
   @override
-  String get showcaseControlFeatureHistory => 'View your recent commit history';
+  String get showcaseControlFeatureHistory => '最近のコミット履歴を表示';
 
   @override
-  String get showcaseControlFeatureConflicts => 'Resolve merge conflicts when they arise';
+  String get showcaseControlFeatureConflicts => 'マージ競合を解決';
 
   @override
-  String get showcaseControlFeatureMore => 'Access force push, force pull, and more';
+  String get showcaseControlFeatureMore => 'フォースプッシュ、フォースプルなど';
 
   @override
-  String get showcaseAutoSyncTitle => 'Auto Sync';
+  String get showcaseAutoSyncTitle => '自動同期';
 
   @override
-  String get showcaseAutoSyncSubtitle => 'Keep your repos in sync automatically.';
+  String get showcaseAutoSyncSubtitle => 'リポジトリを自動で同期';
 
   @override
-  String get showcaseAutoSyncFeatureApp => 'Sync when selected apps open or close';
+  String get showcaseAutoSyncFeatureApp => '選択したアプリの開閉時に同期';
 
   @override
-  String get showcaseAutoSyncFeatureSchedule => 'Schedule periodic background syncs';
+  String get showcaseAutoSyncFeatureSchedule => '定期的なバックグラウンド同期';
 
   @override
-  String get showcaseAutoSyncFeatureQuick => 'Sync via quick tiles, shortcuts, or widgets';
+  String get showcaseAutoSyncFeatureQuick => 'クイックタイル、ショートカット、ウィジェットで同期';
 
   @override
-  String get showcaseAutoSyncFeaturePremium => 'Unlock enhanced sync rates with Premium';
+  String get showcaseAutoSyncFeaturePremium => 'プレミアムで同期レートを向上';
 
   @override
-  String get showcaseSetupGuideTitle => 'Setup & Guide';
+  String get showcaseSetupGuideTitle => 'セットアップ & ガイド';
 
   @override
-  String get showcaseSetupGuideSubtitle => 'Revisit the walkthrough anytime.';
+  String get showcaseSetupGuideSubtitle => 'いつでもウォークスルーを再表示';
 
   @override
-  String get showcaseSetupGuideFeatureSetup => 'Re-run the guided setup from scratch';
+  String get showcaseSetupGuideFeatureSetup => 'セットアップを最初から実行';
 
   @override
-  String get showcaseSetupGuideFeatureTour => 'Take a quick tour of the UI highlights';
+  String get showcaseSetupGuideFeatureTour => 'UIのハイライトをツアー';
 
   @override
-  String get showcaseRepoTitle => 'Your Repository';
+  String get showcaseRepoTitle => 'リポジトリ';
 
   @override
-  String get showcaseRepoSubtitle => 'Your command center for managing this repository.';
+  String get showcaseRepoSubtitle => 'このリポジトリを管理するコマンドセンター';
 
   @override
-  String get showcaseRepoFeatureAuth => 'Authenticate with your git provider';
+  String get showcaseRepoFeatureAuth => 'Gitプロバイダで認証';
 
   @override
-  String get showcaseRepoFeatureDir => 'Switch or select your local directory';
+  String get showcaseRepoFeatureDir => 'ローカルディレクトリを選択または変更';
 
   @override
-  String get showcaseRepoFeatureBrowse => 'Browse and edit files directly';
+  String get showcaseRepoFeatureBrowse => 'ファイルを直接参照・編集';
 
   @override
-  String get showcaseRepoFeatureRemote => 'View or change the remote URL';
+  String get showcaseRepoFeatureRemote => 'リモートURLを表示または変更';
 
   @override
-  String get onboardingClientMode => 'Client Mode';
+  String get onboardingClientMode => 'クライアントモード';
 
   @override
-  String get onboardingClientModeDescription => 'Everything you would expect from a git client';
+  String get onboardingClientModeDescription => 'Gitクライアントに期待されるすべての機能';
 
   @override
-  String get onboardingClientFeatureBranch => 'Branch management';
+  String get onboardingClientFeatureBranch => 'ブランチ管理';
 
   @override
-  String get onboardingClientFeatureCommit => 'Manual commit & push';
+  String get onboardingClientFeatureCommit => '手動コミット & プッシュ';
 
   @override
-  String get onboardingClientFeatureDiff => 'Diff viewer';
+  String get onboardingClientFeatureDiff => '差分ビューア';
 
   @override
-  String get onboardingSyncMode => 'Sync Mode';
+  String get onboardingSyncMode => '同期モード';
 
   @override
-  String get onboardingSyncModeDescription => 'Automated file syncing in the background';
+  String get onboardingSyncModeDescription => '自動ファイル同期をバックグラウンドで実行';
 
   @override
-  String get onboardingSyncFeatureAutoCommit => 'Auto commit & push';
+  String get onboardingSyncFeatureAutoCommit => '自動コミット & プッシュ';
 
   @override
-  String get onboardingSyncFeatureBackground => 'Background operation';
+  String get onboardingSyncFeatureBackground => 'バックグラウンド動作';
 
   @override
-  String get onboardingSyncFeatureConflict => 'Easy conflict resolution';
+  String get onboardingSyncFeatureConflict => '簡単な競合解決';
 
   @override
-  String get onboardingFileExplorer => 'File Explorer';
+  String get onboardingFileExplorer => 'ファイルエクスプローラ';
 
   @override
-  String get onboardingBrowseFeatureHidden => 'View hidden files';
+  String get onboardingBrowseFeatureHidden => '隠しファイルを表示';
 
   @override
-  String get onboardingBrowseFeatureLog => 'View git log';
+  String get onboardingBrowseFeatureLog => 'Gitログを表示';
 
   @override
-  String get onboardingBrowseFeatureIgnore => 'Untrack and ignore files';
+  String get onboardingBrowseFeatureIgnore => 'ファイルの追跡解除と無視';
 
   @override
-  String get onboardingCodeEditor => 'Code Editor';
+  String get onboardingCodeEditor => 'コードエディタ';
 
   @override
-  String get onboardingEditFeatureSyntax => 'Syntax highlighting';
+  String get onboardingEditFeatureSyntax => '構文ハイライト';
 
   @override
-  String get onboardingEditFeatureAutosave => 'Auto-saving';
+  String get onboardingEditFeatureAutosave => '自動保存';
 
   @override
-  String get onboardingEditFeatureExperimental => 'Experimental feature';
+  String get onboardingEditFeatureExperimental => '実験的機能';
 
   @override
-  String get onboardingNotificationDescription => 'Notifications keep you informed about:';
+  String get onboardingNotificationDescription => '通知は以下をお知らせします：';
 
   @override
-  String get onboardingNotificationFeatureSync => 'Sync status updates';
+  String get onboardingNotificationFeatureSync => '同期ステータスの更新';
 
   @override
-  String get onboardingNotificationFeatureConflict => 'Merge conflict alerts';
+  String get onboardingNotificationFeatureConflict => 'マージ競合の警告';
 
   @override
-  String get onboardingNotificationFeatureBug => 'Bug report notifications';
+  String get onboardingNotificationFeatureBug => 'バグ報告の通知';
 
   @override
-  String get onboardingNotificationDefault => 'All notifications are off by default.';
+  String get onboardingNotificationDefault => '通知はすべてデフォルトでオフです';
 
   @override
-  String get onboardingFileAccessDescription => 'File access is required for:';
+  String get onboardingFileAccessDescription => 'ファイルアクセスが必要な機能：';
 
   @override
-  String get onboardingFileAccessFeatureSync => 'Syncing your repository';
+  String get onboardingFileAccessFeatureSync => 'リポジトリの同期';
 
   @override
-  String get onboardingFileAccessFeatureReadWrite => 'Reading and writing files';
+  String get onboardingFileAccessFeatureReadWrite => 'ファイルの読み書き';
 
   @override
-  String get onboardingFileAccessFeatureDirectory => 'Accessing your selected directory';
+  String get onboardingFileAccessFeatureDirectory => '選択したディレクトリへのアクセス';
 
   @override
-  String get onboardingPremiumFeatures => 'Premium Features';
+  String get onboardingPremiumFeatures => 'プレミアム機能';
 
   @override
-  String get onboardingWelcomeTitle => 'Effortless File Syncing';
+  String get onboardingWelcomeTitle => '簡単ファイル同期';
 
   @override
-  String get onboardingWelcomeDescWorks => 'Works\n';
+  String get onboardingWelcomeDescWorks => 'バックグラウンドで\n';
 
   @override
-  String get onboardingWelcomeDescBackground => 'in the background,\n';
+  String get onboardingWelcomeDescBackground => '動作し、\n';
 
   @override
-  String get onboardingWelcomeDescYourWork => 'your work\n';
+  String get onboardingWelcomeDescYourWork => 'あなたの作業に\n';
 
   @override
-  String get onboardingWelcomeDescFocus => 'always in focus';
+  String get onboardingWelcomeDescFocus => '集中できます';
 
   @override
-  String get onboardingChooseYourFocus => 'Choose your focus';
+  String get onboardingChooseYourFocus => 'フォーカスを選択';
 
   @override
-  String get onboardingChangeLaterInSettings => 'You can change this later in settings';
+  String get onboardingChangeLaterInSettings => '設定から後で変更できます';
 
   @override
-  String get onboardingBrowseEditTitle => 'Browse & Edit';
+  String get onboardingBrowseEditTitle => '参照 & 編集';
 
   @override
-  String get onboardingBrowseEditSubtitle => 'Built-in tools for your files';
+  String get onboardingBrowseEditSubtitle => 'ファイル用の内蔵ツール';
 
   @override
-  String get onboardingAlmostThereTitle => 'Almost there!';
+  String get onboardingAlmostThereTitle => 'もう少しです！';
 
   @override
-  String get onboardingAlmostThereSubtitle => 'Here\'s what\'s next:';
+  String get onboardingAlmostThereSubtitle => '次に行うこと：';
 
   @override
-  String get onboardingStepAuthenticate => 'Authenticate with your Git provider';
+  String get onboardingStepAuthenticate => 'Gitプロバイダで認証';
 
   @override
-  String get onboardingStepClone => 'Clone a repository to your device';
+  String get onboardingStepClone => 'リポジトリを端末にクローン';
 
   @override
-  String get onboardingStepSyncSettings => 'Configure your sync settings';
+  String get onboardingStepSyncSettings => '同期設定を構成';
 
   @override
-  String get onboardingStepWiki => 'Check the wiki if you need help';
+  String get onboardingStepWiki => '必要に応じてWikiを確認';
 
   @override
-  String get onboardingStepAllSet => 'Then you\'ll be all set!';
+  String get onboardingStepAllSet => '以上で準備完了！';
 
   @override
-  String get onboardingAuthTitle => 'Authenticate';
+  String get onboardingAuthTitle => '認証';
 
   @override
-  String get onboardingAuthSubtitle => 'Authenticate with your preferred git provider';
+  String get onboardingAuthSubtitle => '希望のGitプロバイダで認証';
 
   @override
-  String get onboardingLaunchWiki => 'Launch the wiki';
+  String get onboardingLaunchWiki => 'Wikiを開く';
+
+  @override
+  String get onboardingHowYouFoundUsTitle => 'GitSyncをどのように知りましたか？';
+
+  @override
+  String get onboardingHowYouFoundUsSubtitle => 'ユーザーがどこから来たのか教えてください（複数選択可）';
+
+  @override
+  String get sourceReddit => 'Reddit';
+
+  @override
+  String get sourceYoutube => 'YouTube';
+
+  @override
+  String get sourceDiscord => 'Discord';
+
+  @override
+  String get sourceMedium => 'Medium';
+
+  @override
+  String get sourceGoogle => 'Google検索';
+
+  @override
+  String get sourceGithubFdroid => 'GitHub / F-Droid';
+
+  @override
+  String get sourceStore => 'Playストア / App Store';
+
+  @override
+  String get sourceWordOfMouth => '口コミ';
+
+  @override
+  String get sourceAdvertisements => '広告';
+
+  @override
+  String get sourceObsidian => 'Obsidian Gitプラグイン';
+
+  @override
+  String get sourceAiSearch => 'AI検索（ChatGPT、Claude、Grok）';
+
+  @override
+  String get sourceOther => 'その他';
+
+  @override
+  String get sourceOtherHint => '出典を教えてください';
 
   @override
   String get currentBranch => '現在のブランチ';
@@ -767,7 +809,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get detachedHead => 'Detached Head';
 
   @override
-  String get unbornBranch => 'Unborn Branch';
+  String get unbornBranch => '未生成ブランチ';
 
   @override
   String get commitsNotFound => 'コミットが見つかりません…';
@@ -815,7 +857,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appSyncDescription => '選択したアプリが開かれた、または閉じられた時に自動同期します';
 
   @override
-  String get appSyncIosDescription => 'Automatically syncs when GitSync is opened or closed';
+  String get appSyncIosDescription => 'GitSyncの開閉時に自動同期';
 
   @override
   String get iosAppSyncDocsLinkText => '他のアプリの開閉時に同期する';
@@ -864,52 +906,52 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduledSyncDescription => 'バックグラウンドで定期的に自動同期します';
 
   @override
-  String get sync => '同期';
+  String get tabHome => 'ホーム';
 
   @override
   String get iosDefaultSyncRate => 'iOSが許可した時';
 
   @override
-  String get every => 'every';
+  String get every => 'ごと';
 
   @override
-  String get scheduledSync => 'Scheduled Sync';
+  String get scheduledSync => '定期同期';
 
   @override
-  String get custom => 'Custom';
+  String get custom => 'カスタム';
 
   @override
-  String get interval15min => '15 min';
+  String get interval15min => '15分';
 
   @override
-  String get interval30min => '30 min';
+  String get interval30min => '30分';
 
   @override
-  String get interval1hour => '1 hour';
+  String get interval1hour => '1時間';
 
   @override
-  String get interval6hours => '6 hours';
+  String get interval6hours => '6時間';
 
   @override
-  String get interval12hours => '12 hours';
+  String get interval12hours => '12時間';
 
   @override
-  String get interval1day => '1 day';
+  String get interval1day => '1日';
 
   @override
-  String get interval1week => '1 week';
+  String get interval1week => '1週間';
 
   @override
-  String get minutes => 'minute(s)';
+  String get minutes => '分';
 
   @override
-  String get hours => 'hour(s)';
+  String get hours => '時間';
 
   @override
-  String get days => 'day(s)';
+  String get days => '日';
 
   @override
-  String get weeks => 'week(s)';
+  String get weeks => '週間';
 
   @override
   String get enhancedScheduledSync => '拡張スケジュール同期';
@@ -940,6 +982,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get useForWidgetManualSync => '手動同期ウィジェットに使用';
+
+  @override
+  String get remoteAuthMismatchTitle => 'このリモートでは認証が機能しません';
+
+  @override
+  String get remoteAuthMismatchUsesSsh => 'このリモートはSSHを使用 — タップして切り替え';
+
+  @override
+  String get remoteAuthMismatchUsesHttps => 'このリモートはHTTPSまたはOAuthを使用 — タップして切り替え';
 
   @override
   String get selectYourGitProviderAndAuthenticate => 'Gitプロバイダーを選択して認証してください';
@@ -1002,7 +1053,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get privKey => '秘密鍵';
 
   @override
-  String get passphrase => 'パスフェーズ';
+  String get passphrase => 'パスフレーズ';
 
   @override
   String get privateKey => '秘密鍵';
@@ -1108,16 +1159,16 @@ class AppLocalizationsJa extends AppLocalizations {
       'リポジトリ検索はAPIから返される最初の100件のリポジトリのみを調査するため、目的のリポジトリが表示されない場合があります。\n\n目的のリポジトリが検索結果に表示されない場合は、HTTPSまたはSSHのURLを使用して直接クローンしてください。';
 
   @override
-  String get advancedOptions => 'Advanced Options';
+  String get advancedOptions => '詳細オプション';
 
   @override
-  String get shallowClone => 'Shallow Clone (Depth)';
+  String get shallowClone => 'シャロークローン（深さ）';
 
   @override
-  String get bareClone => 'Bare Clone';
+  String get bareClone => 'ベアクローン';
 
   @override
-  String get cloneDepthPlaceholder => 'full';
+  String get cloneDepthPlaceholder => 'フル';
 
   @override
   String get repositorySettings => 'リポジトリ設定';
@@ -1144,7 +1195,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get syncMessageLabel => '同期メッセージ';
 
   @override
-  String get defaultSyncMessageLabel => 'Default Sync Message';
+  String get defaultSyncMessageLabel => 'デフォルト同期メッセージ';
 
   @override
   String get syncMessageDescription => '日付と時刻には %s を使用';
@@ -1153,7 +1204,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get syncMessageTimeFormatLabel => '同期メッセージの日時形式';
 
   @override
-  String get defaultSyncMessageTimeFormatLabel => 'Default Sync Message Time Format';
+  String get defaultSyncMessageTimeFormatLabel => 'デフォルト同期メッセージの時刻形式';
 
   @override
   String get syncMessageTimeFormatDescription => '標準的な日時フォーマット構文を使用します';
@@ -1168,10 +1219,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authorNameLabel => '作成者名';
 
   @override
-  String get defaultAuthorNameLabel => 'default author name';
+  String get defaultAuthorNameLabel => 'デフォルトの作成者名';
 
   @override
-  String get authorNameDescription => 'used to identify you in commit history';
+  String get authorNameDescription => 'コミット履歴であなたを識別するために使用';
 
   @override
   String get authorName => 'JohnSmith12';
@@ -1180,23 +1231,23 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authorEmailLabel => '作成者のメールアドレス';
 
   @override
-  String get defaultAuthorEmailLabel => 'default author email';
+  String get defaultAuthorEmailLabel => 'デフォルトの作成者メール';
 
   @override
-  String get authorEmailDescription => 'attached to your commits for attribution';
+  String get authorEmailDescription => 'コミットにattributionとして添付';
 
   @override
   String get authorEmail => 'john12@smith.com';
 
   @override
-  String get postFooterLabel => 'post footer';
+  String get postFooterLabel => '投稿フッター';
 
   @override
-  String get postFooterDescription => 'appended to issues, comments, and pull requests you create';
+  String get postFooterDescription => '作成するIssue、コメント、PRの末尾に追加';
 
   @override
   String get postFooterDialogInfo =>
-      'This text is automatically appended to the end of issues, comments, and pull requests you create. You can change or remove it in your repository settings.\n\nThe default for new repositories can be set in Global Settings under Repository Defaults.';
+      'このテキストは、作成するIssue、コメント、プルリクエストの末尾に自動的に追加されます。リポジトリ設定で変更または削除できます。\n\n新しいリポジトリのデフォルトは、グローバル設定の「リポジトリのデフォルト」で設定できます。';
 
   @override
   String get gitIgnore => '.gitignore';
@@ -1349,7 +1400,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get miscellaneous => 'その他';
 
   @override
-  String get dangerZone => 'デッドゾーン';
+  String get dangerZone => '危険ゾーン';
 
   @override
   String get file => 'ファイル';
@@ -1423,6 +1474,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get viewGitLogDescription => 'Gitの完全なログ履歴を表示';
+
+  @override
+  String get openInTextastic => 'Open in Textastic';
+
+  @override
+  String get openInTextasticDescription => 'Open file in Textastic app';
 
   @override
   String get ignoreUntrack => '.gitignore + 追跡解除';
@@ -1518,25 +1575,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String get submodulesFoundAction => 'サブモジュールを追加';
 
   @override
-  String get addRemote => 'Add Remote';
+  String get addRemote => 'リモートを追加';
 
   @override
-  String get deleteRemote => 'Delete Remote';
+  String get deleteRemote => 'リモートを削除';
 
   @override
-  String get renameRemote => 'Rename Remote';
+  String get renameRemote => 'リモートの名前を変更';
 
   @override
-  String get remoteName => 'Remote Name';
+  String get remoteName => 'リモート名';
 
   @override
-  String get confirmDeleteRemote => 'Are you sure you want to delete the remote \"%s\"?';
+  String get confirmDeleteRemote => 'リモート「%s」を削除してもよろしいですか？';
 
   @override
-  String get orEnterManually => 'or enter manually';
+  String get orEnterManually => 'または手動で入力';
 
   @override
-  String get createOnProvider => 'Create on %s';
+  String get createOnProvider => '%sで作成';
 
   @override
   String get confirmBranchCheckoutTitle => 'ブランチをチェックアウトしますか？';
@@ -1566,308 +1623,307 @@ class AppLocalizationsJa extends AppLocalizations {
   String get createBranchBasedOn => 'ベース';
 
   @override
-  String get renameBranch => 'Rename Branch';
+  String get renameBranch => 'ブランチ名を変更';
 
   @override
-  String get deleteBranch => 'Delete Branch?';
+  String get deleteBranch => 'ブランチを削除しますか？';
 
   @override
-  String get confirmDeleteBranchMsg => 'Are you sure you want to delete the branch \"%s\"?';
+  String get confirmDeleteBranchMsg => 'ブランチ「%s」を削除してもよろしいですか？';
 
   @override
-  String get menuAmendCommit => 'Amend Commit';
+  String get menuAmendCommit => 'コミットを修正';
 
   @override
-  String get menuAmendCommitDesc => 'Modify the most recent commit message or contents';
+  String get menuAmendCommitDesc => '最新のコミットメッセージまたは内容を変更';
 
   @override
-  String get menuUndoCommit => 'Undo Commit';
+  String get menuUndoCommit => 'コミットを元に戻す';
 
   @override
-  String get menuUndoCommitDesc => 'Undo this commit but keep the changes staged';
+  String get menuUndoCommitDesc => 'コミットを元に戻すが、変更はステージに保持';
 
   @override
-  String get menuResetToCommit => 'Reset to Commit';
+  String get menuResetToCommit => 'このコミットにリセット';
 
   @override
-  String get menuResetToCommitDesc => 'Discard all commits after this one';
+  String get menuResetToCommitDesc => 'このコミット以降のコミットをすべて破棄';
 
   @override
-  String get menuCheckoutCommit => 'Checkout Commit';
+  String get menuCheckoutCommit => 'コミットをチェックアウト';
 
   @override
-  String get menuCheckoutCommitDesc => 'Check out this commit (detached HEAD)';
+  String get menuCheckoutCommitDesc => 'このコミットをチェックアウト（デタッチドHEAD）';
 
   @override
-  String get menuRevertCommit => 'Revert Commit Changes';
+  String get menuRevertCommit => 'コミットの変更を打ち消し';
 
   @override
-  String get menuRevertCommitDesc => 'Create a new commit that undoes these changes';
+  String get menuRevertCommitDesc => 'これらの変更を取り消す新しいコミットを作成';
 
   @override
-  String get menuCreateBranch => 'Create Branch from Commit';
+  String get menuCreateBranch => 'コミットからブランチを作成';
 
   @override
-  String get menuCreateBranchDesc => 'Create a new branch from this commit';
+  String get menuCreateBranchDesc => 'このコミットから新しいブランチを作成';
 
   @override
-  String get menuCreateTag => 'Create Tag';
+  String get menuCreateTag => 'タグを作成';
 
   @override
-  String get menuCreateTagDesc => 'Create a tag on this commit';
+  String get menuCreateTagDesc => 'このコミットにタグを作成';
 
   @override
-  String get menuCherryPick => 'Cherry Pick Commit';
+  String get menuCherryPick => 'コミットをチェリーピック';
 
   @override
-  String get menuCherryPickDesc => 'Apply this commit onto the current branch';
+  String get menuCherryPickDesc => 'このコミットを現在のブランチに適用';
 
   @override
-  String get menuSelectCommits => 'Select Commits';
+  String get menuSelectCommits => 'コミットを選択';
 
   @override
-  String get menuSelectCommitsDesc => 'Select multiple commits for batch operations';
+  String get menuSelectCommitsDesc => 'バッチ操作用に複数のコミットを選択';
 
   @override
-  String get menuCopySha => 'Copy SHA';
+  String get menuCopySha => 'SHAをコピー';
 
   @override
-  String get menuCopyShaDesc => 'Copy the full commit hash to clipboard';
+  String get menuCopyShaDesc => 'コミットハッシュ全体をクリップボードにコピー';
 
   @override
-  String get menuCopyTag => 'Copy Tag';
+  String get menuCopyTag => 'タグをコピー';
 
   @override
-  String get menuCopyTagDesc => 'Copy the tag name to clipboard';
+  String get menuCopyTagDesc => 'タグ名をクリップボードにコピー';
 
   @override
-  String get menuViewOnProvider => 'View on %s';
+  String get menuViewOnProvider => '%sで表示';
 
   @override
-  String get menuViewOnProviderDesc => 'Open this commit in your browser';
+  String get menuViewOnProviderDesc => 'ブラウザでこのコミットを開く';
 
   @override
-  String get createBranchFromCommit => 'Create Branch from Commit';
+  String get createBranchFromCommit => 'コミットからブランチを作成';
 
   @override
-  String get createBranchFromCommitMsg => 'Create a new branch starting at commit %s.';
+  String get createBranchFromCommitMsg => 'コミット%sから新しいブランチを作成します';
 
   @override
-  String get checkoutCommit => 'Checkout Commit';
+  String get checkoutCommit => 'コミットをチェックアウト';
 
   @override
-  String get checkoutCommitMsg => 'This will put you in a detached HEAD state at commit';
+  String get checkoutCommitMsg => 'コミット%sでデタッチドHEAD状態になります';
 
   @override
-  String get checkoutCommitDetachedWarning => 'You will not be on any branch. Create a new branch to keep your changes.';
+  String get checkoutCommitDetachedWarning => 'どのブランチにも属しません。変更を保持するには新しいブランチを作成してください';
 
   @override
-  String get createTagOnCommit => 'Create Tag';
+  String get createTagOnCommit => 'タグを作成';
 
   @override
-  String get createTagOnCommitMsg => 'Create a tag on commit %s.';
+  String get createTagOnCommitMsg => 'コミット%sにタグを作成します';
 
   @override
-  String get tagName => 'Tag Name';
+  String get tagName => 'タグ名';
 
   @override
-  String get revertCommit => 'Revert Commit';
+  String get revertCommit => 'コミットを打ち消し';
 
   @override
-  String get revertCommitMsg => 'Revert the changes introduced by commit';
+  String get revertCommitMsg => 'コミット%sによる変更を取り消します';
 
   @override
-  String get revertCommitWarning => 'This will create a new commit that undoes the changes.';
+  String get revertCommitWarning => '変更を取り消す新しいコミットが作成されます';
 
   @override
-  String get revert => 'Revert';
+  String get revert => '打ち消し';
 
   @override
-  String get amendCommit => 'Amend Commit';
+  String get amendCommit => 'コミットを修正';
 
   @override
-  String get amendCommitMsg => 'Edit the message for commit';
+  String get amendCommitMsg => 'コミット%sのメッセージを編集';
 
   @override
-  String get amendCommitWarning => 'This will rewrite the commit. A force push may be required if this commit has already been pushed.';
+  String get amendCommitWarning => 'コミットが書き換えられます。すでにプッシュ済みの場合はフォースプッシュが必要です';
 
   @override
-  String get amend => 'Amend';
+  String get amend => '修正';
 
   @override
-  String get undoCommit => 'Undo Commit';
+  String get undoCommit => 'コミットを元に戻す';
 
   @override
-  String get undoCommitMsg => 'Undo commit';
+  String get undoCommitMsg => 'コミット%sを元に戻す';
 
   @override
-  String get undoCommitWarning => 'The commit will be removed but your changes will remain staged.';
+  String get undoCommitWarning => 'コミットは削除されますが、変更はステージに残ります';
 
   @override
-  String get undo => 'Undo';
+  String get undo => '元に戻す';
 
   @override
-  String get resetToCommit => 'Reset to Commit';
+  String get resetToCommit => 'コミットにリセット';
 
   @override
-  String get resetToCommitMsg => 'Reset to commit';
+  String get resetToCommitMsg => 'コミット%sにリセット';
 
   @override
-  String get resetToCommitWarning =>
-      'All commits after this one will be permanently lost and working directory changes will be discarded. This cannot be undone.';
+  String get resetToCommitWarning => 'このコミット以降のすべてのコミットと作業ディレクトリの変更は完全に失われます。元に戻せません';
 
   @override
-  String get reset => 'Reset';
+  String get reset => 'リセット';
 
   @override
-  String get cherryPickCommit => 'Cherry Pick Commit';
+  String get cherryPickCommit => 'コミットをチェリーピック';
 
   @override
-  String get cherryPickCommitMsg => 'Apply the changes from commit';
+  String get cherryPickCommitMsg => 'コミット%sから変更を適用';
 
   @override
-  String get cherryPickCommitWarning => 'This may produce merge conflicts if the changes overlap with the target branch.';
+  String get cherryPickCommitWarning => '変更がターゲットブランチと重なる場合、マージ競合が発生する可能性があります';
 
   @override
-  String get cherryPickTargetBranch => 'Target Branch';
+  String get cherryPickTargetBranch => 'ターゲットブランチ';
 
   @override
-  String get cherryPick => 'Cherry Pick';
+  String get cherryPick => 'チェリーピック';
 
   @override
-  String get cherryPickCommits => 'Cherry Pick Commits';
+  String get cherryPickCommits => 'コミットをチェリーピック';
 
   @override
-  String get cherryPickCommitsMsg => 'Apply changes from %s commits onto';
+  String get cherryPickCommitsMsg => '%s件のコミットから変更を適用';
 
   @override
-  String get cherryPickCommitsWarning => 'Commits will be applied in chronological order. Conflicts may occur at each step.';
+  String get cherryPickCommitsWarning => 'コミットは時系列順に適用されます。各ステップで競合が発生する可能性があります';
 
   @override
-  String get squashCommits => 'Squash Commits';
+  String get squashCommits => 'コミットをスカッシュ';
 
   @override
-  String get squashCommitsMsg => 'Combine %s commits into a single commit';
+  String get squashCommitsMsg => '%s件のコミットを1つに統合';
 
   @override
-  String get squashCommitsWarning => 'This rewrites commit history. If these commits have been pushed, a force push will be required.';
+  String get squashCommitsWarning => 'コミット履歴が書き換えられます。プッシュ済みの場合はフォースプッシュが必要です';
 
   @override
-  String get squash => 'Squash';
+  String get squash => 'スカッシュ';
 
   @override
-  String get squashCommitMessage => 'Squash Message';
+  String get squashCommitMessage => 'スカッシュメッセージ';
 
   @override
-  String get selectCommits => 'Select Commits';
+  String get selectCommits => 'コミットを選択';
 
   @override
-  String get selectedCount => '%s selected';
+  String get selectedCount => '%s件選択中';
 
   @override
-  String get squashRequiresConsecutive => 'Squash requires consecutive commits from the latest commit';
+  String get squashRequiresConsecutive => 'スカッシュには最新コミットからの連続したコミットが必要です';
 
   @override
-  String get issues => 'Issues';
+  String get issues => 'Issue';
 
   @override
-  String get issueFilterOpen => 'Open';
+  String get issueFilterOpen => 'オープン';
 
   @override
-  String get issueFilterClosed => 'Closed';
+  String get issueFilterClosed => 'クローズ';
 
   @override
-  String get issueFilterAll => 'All';
+  String get issueFilterAll => 'すべて';
 
   @override
-  String get issuesNotFound => 'No issues found…';
+  String get issuesNotFound => 'Issueが見つかりません…';
 
   @override
-  String get filterAuthor => 'Author';
+  String get filterAuthor => '作成者';
 
   @override
-  String get filterLabels => 'Labels';
+  String get filterLabels => 'ラベル';
 
   @override
-  String get filterAssignee => 'Assignee';
+  String get filterAssignee => '担当者';
 
   @override
-  String get filterMilestone => 'Milestone';
+  String get filterMilestone => 'マイルストーン';
 
   @override
-  String get filterProject => 'Project';
+  String get filterProject => 'プロジェクト';
 
   @override
-  String get filterNone => 'None';
+  String get filterNone => 'なし';
 
   @override
-  String get filterMilestonesEmpty => 'No milestones found';
+  String get filterMilestonesEmpty => 'マイルストーンが見つかりません';
 
   @override
-  String get filterProjectsEmpty => 'No projects found';
+  String get filterProjectsEmpty => 'プロジェクトが見つかりません';
 
   @override
-  String get sortNewest => 'Newest';
+  String get sortNewest => '新しい順';
 
   @override
-  String get sortOldest => 'Oldest';
+  String get sortOldest => '古い順';
 
   @override
-  String get sortMostCommented => 'Most commented';
+  String get sortMostCommented => 'コメント最多順';
 
   @override
-  String get sortRecentlyUpdated => 'Recently updated';
+  String get sortRecentlyUpdated => '更新日順';
 
   @override
-  String get filterSidebar => 'Filters';
+  String get filterSidebar => 'フィルター';
 
   @override
-  String get filterReviewer => 'Reviewer';
+  String get filterReviewer => 'レビュアー';
 
   @override
-  String get pullRequests => 'Pull Requests';
+  String get pullRequests => 'プルリクエスト';
 
   @override
-  String get pullRequestsNotFound => 'No pull requests found…';
+  String get pullRequestsNotFound => 'プルリクエストが見つかりません…';
 
   @override
-  String get tags => 'Tags';
+  String get tags => 'タグ';
 
   @override
-  String get tagsNotFound => 'No tags found…';
+  String get tagsNotFound => 'タグが見つかりません…';
 
   @override
-  String get releases => 'Releases';
+  String get releases => 'リリース';
 
   @override
-  String get releasesNotFound => 'No releases found…';
+  String get releasesNotFound => 'リリースが見つかりません…';
 
   @override
-  String get preRelease => 'PRE-RELEASE';
+  String get preRelease => 'プレリリース';
 
   @override
-  String get draft => 'DRAFT';
+  String get draft => '下書き';
 
   @override
-  String get releaseAssets => 'Assets';
+  String get releaseAssets => 'アセット';
 
   @override
-  String get noAssets => 'No assets';
+  String get noAssets => 'アセットなし';
 
   @override
-  String get actions => 'Actions';
+  String get actions => 'アクション';
 
   @override
-  String get actionsNotFound => 'No actions found…';
+  String get actionsNotFound => 'アクションが見つかりません…';
 
   @override
-  String get actionFilterAll => 'All';
+  String get actionFilterAll => 'すべて';
 
   @override
-  String get actionFilterSuccess => 'Success';
+  String get actionFilterSuccess => '成功';
 
   @override
-  String get actionFilterFailed => 'Failed';
+  String get actionFilterFailed => '失敗';
 
   @override
   String get attemptAutoFix => '自動修復を試みますか？';
@@ -1882,7 +1938,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get someFeaturesMayNotWork => '一部の機能が動作しない可能性があります。';
 
   @override
-  String get unsupportedGitAttributes => 'このリポジトリはストア版でのみ利用可能なGit機能を使用しています。';
+  String get unsupportedGitAttributes => 'このリポジトリはストア版でのみ利用可能なGitフィルターを使用しています。';
 
   @override
   String get tapToOpenPlayStore => 'タップして更新してください。';
@@ -1891,13 +1947,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get ongoingMergeConflict => '進行中のマージコンフリクト';
 
   @override
-  String get networkStallRetry => 'Poor network — will retry shortly';
+  String get networkStallRetry => 'ネットワーク不良 — まもなく再試行';
 
   @override
   String get networkUnavailableRetry => 'ネットワークが利用不可です！\n接続復旧時に再試行します';
 
   @override
-  String get failedToResolveAddressMessage => 'Could not reach the server. Check your internet connection or verify the repository URL is correct.';
+  String get networkStallManual => 'ネットワーク不良 — もう一度お試しください';
+
+  @override
+  String get networkUnavailableManual => 'ネットワークが利用できません — もう一度お試しください';
+
+  @override
+  String get networkRetryComplete => 'キューに入れた操作が完了しました';
+
+  @override
+  String get failedToResolveAddressMessage => 'サーバーに到達できませんでした。インターネット接続を確認するか、リポジトリURLが正しいか確認してください';
 
   @override
   String get pullFailed => 'プルに失敗しました！未コミットの変更がないか確認して再試行してください。';
@@ -1991,274 +2056,329 @@ class AppLocalizationsJa extends AppLocalizations {
   String get trackIssue => '問題を追跡・メッセージに返信';
 
   @override
-  String get createNewRepository => 'Create New Repository';
+  String get issueDuplicateTitle => 'Already Reported';
 
   @override
-  String get noGitRepoFoundMsg => 'No git repository was found in the selected folder. Would you like to create a new one here?';
+  String get issueDuplicateMsg =>
+      'This bug has already been reported and is being tracked in an open issue. \n\nOpen the issue to follow progress, or send your report as a message there so it reaches us without creating a duplicate.';
 
   @override
-  String get remoteSetupLaterMsg => 'This creates a local repository.\nAuthenticate and add a remote to enable sync.';
+  String get viewIssue => 'View Issue';
 
   @override
-  String get localOnlyNoRemote => 'Local only — add a remote to sync';
+  String get sendMessage => 'Send As Message';
 
   @override
-  String get noRemoteConfigured => 'No remote configured';
+  String get issueCommentSuccessTitle => 'Message Sent';
 
   @override
-  String get createRemoteRepo => 'Create Remote Repository';
+  String get issueCommentSuccessMsg =>
+      'Your report has been added to the existing issue. Bookmark this page to track progress and respond to messages. \n\nIssues with no activity for 7 days are automatically closed.';
 
   @override
-  String get repoName => 'Repository Name';
+  String get issueCommentFailedMsg => 'Your message couldn’t be sent. Please check your connection and try again.';
 
   @override
-  String get repoPublic => 'Public';
+  String get createNewRepository => '新しいリポジトリを作成';
 
   @override
-  String get repoPrivate => 'Private';
+  String get noGitRepoFoundMsg => '選択したフォルダにGitリポジトリが見つかりませんでした。ここに新しいリポジトリを作成しますか？';
 
   @override
-  String get creatingRemoteRepo => 'Creating remote repository...';
+  String get remoteSetupLaterMsg => 'ローカルリポジトリが作成されます。\n認証してリモートを追加すると同期できるようになります。';
 
   @override
-  String get remoteRepoCreated => 'Remote repository created and linked as origin';
+  String get localOnlyNoRemote => 'ローカルのみ — 同期するにはリモートを追加';
 
   @override
-  String get remoteRepoCreateFailed => 'Failed to create remote repository';
+  String get noRemoteConfigured => 'リモートが設定されていません';
 
   @override
-  String get noRemoteDetectedMsg => 'This repository has no remote configured. Would you like to create one?';
+  String get createRemoteRepo => 'リモートリポジトリを作成';
 
   @override
-  String get createAndLinkRemote => 'Create & Link Remote';
+  String get repoName => 'リポジトリ名';
 
   @override
-  String get createLocalOnly => 'Local Only';
+  String get repoPublic => 'パブリック';
 
   @override
-  String get initMainBranch => 'Initialize main branch';
+  String get repoPrivate => 'プライベート';
 
   @override
-  String get continueLabel => 'Continue';
+  String get creatingRemoteRepo => 'リモートリポジトリを作成中…';
 
   @override
-  String get githubScopedLoginTitle => 'Step 1: Sign In to GitHub';
+  String get remoteRepoCreated => 'リモートリポジトリが作成され、originとしてリンクされました';
 
   @override
-  String get githubScopedLoginMsg =>
-      'You\'ll be redirected to GitHub to sign in.\n\nLog in with the account that has access to your repositories, then authorize GitSync.';
+  String get remoteRepoCreateFailed => 'リモートリポジトリの作成に失敗しました';
 
   @override
-  String get githubScopedRepoTitle => 'Step 2: Select Repositories';
+  String get noRemoteDetectedMsg => 'このリポジトリにはリモートが設定されていません。作成しますか？';
 
   @override
-  String get githubScopedRepoMsg => 'Choose which repositories GitSync can access.\n\nWhen finished, close the browser to return to the app.';
+  String get createAndLinkRemote => 'リモートを作成してリンク';
 
   @override
-  String get issueDescription => 'Description';
+  String get createLocalOnly => 'ローカルのみ';
 
   @override
-  String get issueNoDescription => 'No description provided';
+  String get initMainBranch => 'mainブランチを初期化';
 
   @override
-  String get issueComments => 'Comments';
+  String get continueLabel => '続行';
 
   @override
-  String get issueNoComments => 'No comments yet';
+  String get githubScopedLoginTitle => 'ステップ1：GitHubにサインイン';
 
   @override
-  String get issueAddComment => 'Add a comment…';
+  String get githubScopedLoginMsg => 'GitHubにリダイレクトされてサインインします。\n\nリポジトリにアクセスできるアカウントでログインし、GitSyncを承認してください。';
 
   @override
-  String get issueSubmitComment => 'Submit';
+  String get githubScopedRepoTitle => 'ステップ2：リポジトリを選択';
 
   @override
-  String get issueCloseIssue => 'Close Issue';
+  String get githubScopedRepoMsg => 'GitSyncがアクセスできるリポジトリを選択してください。\n\n終了したらブラウザを閉じてアプリに戻ります。';
 
   @override
-  String get issueReopenIssue => 'Reopen Issue';
+  String get issueDescription => '説明';
 
   @override
-  String get issueAddReaction => 'Add Reaction';
+  String get issueNoDescription => '説明なし';
 
   @override
-  String get issueWriteDisabled => 'You do not have write access';
+  String get issueComments => 'コメント';
 
   @override
-  String get issueStateUpdated => 'Issue state updated';
+  String get issueNoComments => 'コメントはまだありません';
 
   @override
-  String get issueCommentAdded => 'Comment added';
+  String get issueAddComment => 'コメントを追加…';
 
   @override
-  String get issueCommentFailed => 'Failed to add comment';
+  String get issueSubmitComment => '送信';
 
   @override
-  String get issueStateUpdateFailed => 'Failed to update issue state';
+  String get issueCloseIssue => 'Issueをクローズ';
 
   @override
-  String get issueReactionFailed => 'Failed to update reaction';
+  String get issueReopenIssue => 'Issueを再オープン';
 
   @override
-  String get issuePreview => 'Preview';
+  String get issueAddReaction => 'リアクションを追加';
 
   @override
-  String get issueWrite => 'Write';
+  String get issueWriteDisabled => '書き込みアクセスがありません';
 
   @override
-  String get issueEditSuccess => 'Issue updated';
+  String get issueStateUpdated => 'Issueの状態を更新しました';
 
   @override
-  String get issueEditFailed => 'Failed to update issue';
+  String get issueCommentAdded => 'コメントを追加しました';
 
   @override
-  String get createIssue => 'Create Issue';
+  String get issueCommentFailed => 'コメントの追加に失敗しました';
 
   @override
-  String get createIssueTitle => 'Title';
+  String get issueStateUpdateFailed => 'Issueの状態の更新に失敗しました';
 
   @override
-  String get createIssueTitleHint => 'Issue title';
+  String get issueReactionFailed => 'リアクションの更新に失敗しました';
 
   @override
-  String get createIssueBody => 'Description';
+  String get issuePreview => 'プレビュー';
 
   @override
-  String get createIssueBodyHint => 'Describe the issue…';
+  String get issueWrite => '編集';
 
   @override
-  String get createIssueSubmit => 'Submit Issue';
+  String get issueEditSuccess => 'Issueを更新しました';
 
   @override
-  String get createIssueSuccess => 'Issue created successfully';
+  String get issueEditFailed => 'Issueの更新に失敗しました';
 
   @override
-  String get createIssueFailed => 'Failed to create issue';
+  String get createIssue => 'Issueを作成';
 
   @override
-  String get createIssueBlankIssue => 'Blank Issue';
+  String get createIssueTitle => 'タイトル';
 
   @override
-  String get createIssueSelectTemplate => 'Choose a template';
+  String get createIssueTitleHint => 'Issueのタイトル';
 
   @override
-  String get createIssueRequired => 'Required';
+  String get createIssueBody => '説明';
 
   @override
-  String get createPr => 'Create Pull Request';
+  String get createIssueBodyHint => 'Issueの説明…';
 
   @override
-  String get createPrTitle => 'Title';
+  String get createIssueSubmit => 'Issueを送信';
 
   @override
-  String get createPrTitleHint => 'Pull request title';
+  String get createIssueSuccess => 'Issueを作成しました';
 
   @override
-  String get createPrBody => 'Description';
+  String get createIssueFailed => 'Issueの作成に失敗しました';
 
   @override
-  String get createPrBodyHint => 'Describe your changes…';
+  String get createIssueBlankIssue => '空のIssue';
 
   @override
-  String get createPrSubmit => 'Create Pull Request';
+  String get createIssueSelectTemplate => 'テンプレートを選択';
 
   @override
-  String get createPrSuccess => 'Pull request created';
+  String get createIssueRequired => '必須';
 
   @override
-  String get createPrFailed => 'Failed to create pull request';
+  String get createPr => 'プルリクエストを作成';
 
   @override
-  String get createPrBaseBranch => 'Base';
+  String get createPrTitle => 'タイトル';
 
   @override
-  String get createPrHeadBranch => 'Compare';
+  String get createPrTitleHint => 'プルリクエストのタイトル';
 
   @override
-  String get createPrSelectBranch => 'Select branch';
+  String get createPrBody => '説明';
 
   @override
-  String get prDescription => 'Description';
+  String get createPrBodyHint => '変更内容の説明…';
 
   @override
-  String get prNoDescription => 'No description provided';
+  String get createPrSubmit => 'プルリクエストを作成';
 
   @override
-  String get prActivity => 'Activity';
+  String get createPrSuccess => 'プルリクエストを作成しました';
 
   @override
-  String get prNoActivity => 'No activity yet';
+  String get createPrFailed => 'プルリクエストの作成に失敗しました';
 
   @override
-  String get prCommits => 'Commits';
+  String get createPrBaseBranch => 'ベース';
 
   @override
-  String get prCommitsNotFound => 'No commits found';
+  String get createPrHeadBranch => '比較';
 
   @override
-  String get prChecks => 'Checks';
+  String get createPrSelectBranch => 'ブランチを選択';
 
   @override
-  String get prChecksNotFound => 'No checks found';
+  String get prDescription => '説明';
 
   @override
-  String get prAllChecksPassed => 'All checks passed';
+  String get prNoDescription => '説明なし';
+
+  @override
+  String get prActivity => 'アクティビティ';
+
+  @override
+  String get prNoActivity => 'アクティビティはまだありません';
+
+  @override
+  String get prCommits => 'コミット';
+
+  @override
+  String get prCommitsNotFound => 'コミットが見つかりません';
+
+  @override
+  String get prChecks => 'チェック';
+
+  @override
+  String get prChecksNotFound => 'チェックが見つかりません';
+
+  @override
+  String get prAllChecksPassed => 'すべてのチェックに合格';
 
   @override
   String prChecksFailed(Object count) {
-    return '$count check(s) failed';
+    return '$count件のチェックが失敗';
   }
 
   @override
-  String get prChecksPending => 'Checks pending';
+  String get prChecksPending => 'チェック待機中';
 
   @override
-  String get prFilesChanged => 'Files Changed';
+  String get prFilesChanged => '変更されたファイル';
 
   @override
-  String get prFilesChangedNotFound => 'No changed files found';
+  String get prFilesChangedNotFound => '変更されたファイルが見つかりません';
 
   @override
-  String get prConversation => 'Conversation';
+  String get prConversation => '会話';
 
   @override
-  String get prApproved => 'Approved';
+  String get prApproved => '承認済み';
 
   @override
-  String get prChangesRequested => 'Changes Requested';
+  String get prChangesRequested => '変更リクエスト済み';
 
   @override
-  String get prCommented => 'Commented';
+  String get prCommented => 'コメント済み';
 
   @override
-  String get prNotFound => 'Pull request not found';
+  String get prNotFound => 'プルリクエストが見つかりません';
 
   @override
-  String get prCommentAdded => 'Comment added';
+  String get prCommentAdded => 'コメントを追加しました';
 
   @override
-  String get prCommentFailed => 'Failed to add comment';
+  String get prCommentFailed => 'コメントの追加に失敗しました';
 
   @override
-  String get prReactionFailed => 'Failed to update reaction';
+  String get prReactionFailed => 'リアクションの更新に失敗しました';
 
   @override
-  String get prMentionedInPr => 'mentioned this in pull request';
+  String get prMentionedInPr => 'このプルリクエストで言及';
 
   @override
-  String get prMentionedInIssue => 'mentioned this in issue';
+  String get prMentionedInIssue => 'このIssueで言及';
 
   @override
   String prForcePushed(Object after, Object before) {
-    return 'force-pushed from $before to $after';
+    return '$beforeから$afterにフォースプッシュ';
   }
 
   @override
-  String get recentCommits => 'Recent Commits';
+  String get recentCommits => '最近のコミット';
 
   @override
-  String get branchManagement => 'Branch Management';
+  String get branchManagement => 'ブランチ管理';
 
   @override
-  String get providerTools => 'Provider Tools';
+  String get providerTools => 'プロバイダツール';
+
+  @override
+  String get tabChat => 'チャット';
+
+  @override
+  String get tabFiles => 'ファイル';
+
+  @override
+  String get chatComingSoon => 'チャット機能は近日公開';
+
+  @override
+  String get chatComingSoonSubtitle => 'Claude Codeでファイルと対話';
+
+  @override
+  String get noRepoSetup => 'まずリポジトリを設定してください';
+
+  @override
+  String get enableAiFeatures => 'AI機能を有効化';
+
+  @override
+  String get hideAiFeatures => 'AI機能を非表示';
+
+  @override
+  String get hideAiFeaturesConfirmTitle => 'AI機能を非表示にしますか？';
+
+  @override
+  String get hideAiFeaturesConfirmMsg => 'これによりAIタブとアプリ内のすべてのAIボタンが削除されます。グローバル設定からいつでも再有効化できます';
+
+  @override
+  String get aiSetupTitle => 'AIのセットアップ';
+
+  @override
+  String get aiSetupMsg => 'この機能を使用するにはAIプロバイダを設定してください。AI設定に移動しますか？';
 }

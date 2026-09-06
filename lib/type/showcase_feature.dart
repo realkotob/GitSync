@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:GitSync/type/git_provider.dart';
 
@@ -12,7 +11,7 @@ enum ShowcaseFeature {
 
   const ShowcaseFeature({required this.icon, required this.label, required this.storageKey});
 
-  final IconData icon;
+  final FaIconData icon;
   final String label;
   final String storageKey;
 
@@ -31,7 +30,7 @@ enum ShowcaseFeature {
       final feature = fromStorageKey(key);
       if (feature != null) features.add(feature);
     }
-    return features.isEmpty ? List.of(defaultPinned) : features;
+    return features;
   }
 
   static List<String> toStorageKeys(List<ShowcaseFeature> features) {
@@ -46,7 +45,7 @@ enum ShowcaseFeature {
   };
 
   static List<ShowcaseFeature> availableFor(GitProvider? provider) => switch (provider) {
-    GitProvider.GITEA => values,
+    GitProvider.GITEA || GitProvider.CODEBERG => values,
     _ => values,
   };
 }

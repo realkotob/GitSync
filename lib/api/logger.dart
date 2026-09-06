@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:GitSync/api/accessibility_service_helper.dart';
 import 'package:GitSync/api/helper.dart';
+import 'package:GitSync/api/issue_duplicate_finder.dart';
 import 'package:GitSync/api/manager/auth/github_manager.dart';
 import 'package:GitSync/api/manager/settings_manager.dart';
 import 'package:GitSync/main.dart';
@@ -11,6 +12,8 @@ import 'package:GitSync/type/git_provider.dart';
 import 'package:GitSync/ui/dialog/github_issue_oauth.dart' as GithubIssueOauthDialog;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:GitSync/constant/strings.dart';
 import 'package:GitSync/api/manager/storage.dart';
@@ -22,6 +25,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:GitSync/ui/dialog/error_occurred.dart' as ErrorOccurredDialog;
 
 import '../ui/dialog/github_issue_report.dart' as GithubIssueReportDialog;
+import '../ui/dialog/issue_duplicate_found.dart' as IssueDuplicateFoundDialog;
 import '../ui/dialog/issue_reported_successfully.dart' as IssueReportedSuccessfullyDialog;
 
 // Also add to rust/src/api/git_manager.rs:21
@@ -75,6 +79,7 @@ enum LogType {
   GetRemoteUrlLink,
   DiscardDir,
   DiscardGitIndex,
+  RecreateGitIndex,
   DiscardFetchHead,
   PruneCorruptedObjects,
   GetSubmodules,
@@ -100,6 +105,7 @@ enum LogType {
   GetTags,
   GetReleases,
   GetActionRuns,
+  GetFeatureCounts,
   GetIssueDetail,
   AddIssueComment,
   UpdateIssueState,
@@ -119,7 +125,7 @@ enum From { GLOBAL_SETTINGS, ERROR_DIALOG, CODE_EDITOR, SYNC_DURING_DETACHED_HEA
 
 void notificationClicked(NotificationResponse _) {
   Logger.notifClicked = true;
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class Logger {
@@ -197,7 +203,9 @@ class Logger {
       await tempSettingsManager.reinit(repoIndex: 0);
       final provider = await tempSettingsManager.getGitProvider();
       if (provider == GitProvider.GITHUB) {
-        reportIssueToken = (await tempSettingsManager.getGitHttpAuthCredentials()).$2;
+        if (!await tempSettingsManager.getBool(StorageKey.setman_githubScopedOauth)) {
+          reportIssueToken = (await tempSettingsManager.getGitHttpAuthCredentials()).$2;
+        }
       }
       uiSettingsManager.reinit();
     }
@@ -214,15 +222,28 @@ class Logger {
     if (reportIssueToken == "" || reportIssueToken == null) return;
 
     String? initialTitle;
+    String? errorText;
     if (errorMessage != null) {
       final errorMatch = RegExp(r'Error: (.+)').firstMatch(errorMessage);
-      final extracted = errorMatch != null ? errorMatch.group(1)! : errorMessage.split('\n').first;
-      initialTitle = 'Error: `$extracted`';
+      errorText = errorMatch != null ? errorMatch.group(1)! : errorMessage.split('\n').first;
+      initialTitle = 'Error: `$errorText`';
+    }
+
+    final duplicate = errorText == null ? null : await findDuplicateIssue(reportIssueToken!, errorText);
+    if (duplicate != null) {
+      if (!context.mounted) return;
+      if (!await IssueDuplicateFoundDialog.showDialog(context, duplicate)) return;
+      if (!context.mounted) return;
     }
 
     final deviceInfoEntries = await generateDeviceInfoEntries();
 
-    await GithubIssueReportDialog.showDialog(context, initialTitle: initialTitle, deviceInfoEntries: deviceInfoEntries, (title, description, minimalRepro, includeLogFiles) async {
+    await GithubIssueReportDialog.showDialog(context, initialTitle: initialTitle, deviceInfoEntries: deviceInfoEntries, (
+      title,
+      description,
+      minimalRepro,
+      includeLogFiles,
+    ) async {
       final logs = !includeLogFiles
           ? ""
           : utf8.decode(utf8.encode((await _generateLogs()).split("\n").reversed.join("\n")).take(62 * 1024).toList(), allowMalformed: true);
@@ -253,6 +274,21 @@ $logs
 </details>
 ''';
 
+      if (duplicate != null) {
+        final commentUrl = await postIssueComment(reportIssueToken!, duplicate.number, issueBody);
+
+        if (commentUrl == null) {
+          Fluttertoast.showToast(msg: t.issueCommentFailedMsg, toastLength: Toast.LENGTH_LONG, gravity: null);
+          return;
+        }
+
+        print('ISSUE_COMMENTED: ${duplicate.number} $commentUrl');
+
+        if (!context.mounted) return;
+        await IssueReportedSuccessfullyDialog.showDialog(context, commentUrl, title: t.issueCommentSuccessTitle, message: t.issueCommentSuccessMsg);
+        return;
+      }
+
       final response = await http.post(
         url,
         headers: {'Authorization': 'token $reportIssueToken', 'Accept': 'application/vnd.github+json'},
@@ -263,14 +299,20 @@ $logs
         }),
       );
 
-      if (response.statusCode == 201) {
-        print('Issue created successfully: ${response.statusCode} ${response.body}');
-      } else {
+      final issueJson = jsonDecode(utf8.decode(response.bodyBytes));
+      if (response.statusCode != 201) {
         await repoManager.setStringNullable(StorageKey.repoman_reportIssueToken, null);
         print('Failed to create issue: ${response.statusCode} ${response.body}');
+        return;
       }
 
-      IssueReportedSuccessfullyDialog.showDialog(context, jsonDecode(utf8.decode(response.bodyBytes))["html_url"]);
+      final issueNumber = issueJson["number"]?.toString();
+      print('Issue created successfully: ${response.statusCode} ${response.body}');
+
+      final issueUrl = issueJson["html_url"];
+      print('ISSUE_CREATED: ${issueNumber ?? "?"} ${issueUrl ?? "?"}');
+      if (issueUrl == null || !context.mounted) return;
+      IssueReportedSuccessfullyDialog.showDialog(context, issueUrl);
     });
   }
 
@@ -298,8 +340,10 @@ $logs
       ('Device Model', deviceModel),
       ('OS Version', osVersion),
       ('App Version', appVersion),
-      ('Git Provider', '${await uiSettingsManager.getStringNullable(StorageKey.setman_gitProvider)}'),
-      ('Repo URL', '${await uiSettingsManager.getStringList(StorageKey.setman_remoteUrlLink)}'),
+      (
+        'Git Provider',
+        '${await uiSettingsManager.getStringNullable(StorageKey.setman_gitProvider)}${await uiSettingsManager.getBool(StorageKey.setman_githubScopedOauth) ? " (scoped)" : ""}',
+      ),
     ];
 
     if (await AccessibilityServiceHelper.isAccessibilityServiceEnabled()) {

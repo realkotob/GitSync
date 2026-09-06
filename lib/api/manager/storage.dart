@@ -16,7 +16,7 @@ enum StorageKey<T> {
   repoman_onboardingStep<int>(name: "onboardingStep", defaultValue: 0),
   repoman_erroring<String?>(name: "erroring", defaultValue: null),
   repoman_ghSponsorToken<String?>(name: "ghSponsorToken", defaultValue: null),
-  repoman_repoNames<List<String>>(name: "repoNames", defaultValue: <String>["main"]),
+  repoman_repoNames<List<String>>(name: "repoNames", defaultValue: <String>["default"]),
   repoman_showGithubAppRedirectDisclosure<bool>(name: "showGithubAppRedirectDisclosure", defaultValue: true),
   repoman_reportIssueToken<String?>(name: "reportIssueToken", defaultValue: null),
   repoman_defaultClientModeEnabled<bool>(name: "defaultClientModeEnabled", defaultValue: false),
@@ -26,7 +26,15 @@ enum StorageKey<T> {
   repoman_defaultAuthorEmail<String>(name: "defaultAuthorEmail", defaultValue: ""),
   repoman_defaultPostFooter<String>(name: "defaultPostFooter", defaultValue: defaultPostFooter),
   repoman_defaultRemote<String>(name: "defaultRemote", defaultValue: "origin"),
-  repoman_editorLineWrap<bool>(name: "editorLineWrap", defaultValue: false),
+  repoman_editorLineWrap<bool>(name: "editorLineWrap", defaultValue: true),
+  repoman_showEditorExperimentalNotice<bool>(name: "showEditorExperimentalNotice", defaultValue: true),
+  repoman_aiProvider<String?>(name: "aiProvider", defaultValue: null),
+  repoman_aiApiKey<String?>(name: "aiApiKey", defaultValue: null),
+  repoman_aiEndpoint<String?>(name: "aiEndpoint", defaultValue: null),
+  repoman_aiChatModel<String?>(name: "aiChatModel", defaultValue: null),
+  repoman_aiToolModel<String?>(name: "aiToolModel", defaultValue: null),
+  repoman_aiWandModel<String?>(name: "aiWandModel", defaultValue: null),
+  repoman_aiFeaturesEnabled<bool>(name: "aiFeaturesEnabled", defaultValue: true),
 
   // Settings Manager
   setman_authorName<String?>(name: "authorName", defaultValue: "", hasDefault: true),
@@ -63,10 +71,12 @@ enum StorageKey<T> {
   setman_uncommittedFilePaths<List<String>>(name: "uncommittedFilePaths", defaultValue: []),
   setman_stagedFilePaths<List<String>>(name: "stagedFilePaths", defaultValue: []),
   setman_remoteUrlLink<List<String>>(name: "remoteUrlLink", defaultValue: []),
+  setman_remotes<List<String>>(name: "remotes", defaultValue: []),
   setman_branchName<String?>(name: "branchName", defaultValue: null),
   setman_branchNames<List<String>>(name: "branchNames", defaultValue: []),
   setman_disableSsl<bool>(name: "disableSsl", defaultValue: false),
   setman_submodulePaths<List<String>>(name: "submodulePaths", defaultValue: []),
+  setman_hasGitFilters<bool>(name: "hasGitFilters", defaultValue: false),
   setman_pinnedShowcaseFeatures<List<String>>(name: "pinnedShowcaseFeatures", defaultValue: ["issues", "pull_requests"]);
 
   const StorageKey({required this.name, required this.defaultValue, this.hasDefault = false});
@@ -142,7 +152,7 @@ class Storage<T extends StorageKey> {
     }
 
     if (N == getType<List<String>?>() || N == getType<List<String>>()) {
-      final finalValue = (value == "null" || value == null || value.isEmpty == true ? null : value)?.split(",");
+      final List<String>? finalValue = (value == "null" || value == null) ? null : (value.isEmpty ? <String>[] : value.split(","));
 
       if (null is N) {
         return finalValue as N;

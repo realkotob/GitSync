@@ -47,7 +47,7 @@ class _TagsPageState extends State<TagsPage> {
 
   (String, String) _parseOwnerRepo() {
     final segments = Uri.parse(widget.remoteWebUrl).pathSegments;
-    return (segments[0], segments[1].replaceAll(".git", ""));
+    return (segments[0], segments[1].replaceAll(RegExp(r'\.git$'), ''));
   }
 
   void _fetchTags() {
@@ -128,37 +128,53 @@ class _TagsPageState extends State<TagsPage> {
             ),
 
             Expanded(
-              child: _tags.isEmpty && !_loading
-                  ? Center(
-                      child: Text(
-                        t.tagsNotFound.toUpperCase(),
-                        style: TextStyle(color: colours.secondaryLight, fontWeight: FontWeight.bold, fontSize: textLG),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: spaceMD),
-                      itemCount: _tags.length + (_loading || _loadNextPage != null ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index >= _tags.length) {
-                          return Padding(
-                            padding: EdgeInsets.all(spaceMD),
+              child: RefreshIndicator(
+                color: colours.tertiaryDark,
+                onRefresh: () async {
+                  _fetchTags();
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: _tags.isEmpty && !_loading
+                    ? LayoutBuilder(
+                        builder: (context, constraints) => SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: constraints.maxHeight,
                             child: Center(
-                              child: CircularProgressIndicator(color: colours.secondaryLight, strokeWidth: spaceXXXXS),
+                              child: Text(
+                                t.tagsNotFound.toUpperCase(),
+                                style: TextStyle(color: colours.secondaryLight, fontWeight: FontWeight.bold, fontSize: textLG),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: spaceMD),
+                        itemCount: _tags.length + (_loading || _loadNextPage != null ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= _tags.length) {
+                            return Padding(
+                              padding: EdgeInsets.all(spaceMD),
+                              child: Center(
+                                child: CircularProgressIndicator(color: colours.secondaryLight, strokeWidth: spaceXXXXS),
+                              ),
+                            );
+                          }
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: spaceXS),
+                            child: _ItemTag(
+                              tag: _tags[index],
+                              gitProvider: widget.gitProvider,
+                              remoteWebUrl: widget.remoteWebUrl,
+                              accessToken: widget.accessToken,
                             ),
                           );
-                        }
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: spaceXS),
-                          child: _ItemTag(
-                            tag: _tags[index],
-                            gitProvider: widget.gitProvider,
-                            remoteWebUrl: widget.remoteWebUrl,
-                            accessToken: widget.accessToken,
-                          ),
-                        );
-                      },
-                    ),
+                        },
+                      ),
+              ),
             ),
           ],
         ),
@@ -180,7 +196,7 @@ class _ItemTag extends StatelessWidget {
     final base = '${uri.scheme}://${uri.host}';
     final segments = uri.pathSegments;
     final owner = segments[0];
-    final repo = segments[1].replaceAll('.git', '');
+    final repo = segments[1].replaceAll(RegExp(r'\.git$'), '');
     final encodedTag = Uri.encodeComponent(tag.name);
 
     return switch (gitProvider) {
@@ -191,7 +207,7 @@ class _ItemTag extends StatelessWidget {
 
   String get _repoName {
     final segments = Uri.parse(remoteWebUrl).pathSegments;
-    return segments[1].replaceAll('.git', '');
+    return segments[1].replaceAll(RegExp(r'\.git$'), '');
   }
 
   Map<String, String> get _authHeaders => switch (gitProvider) {

@@ -125,7 +125,7 @@ class _SyncLoaderState extends State<SyncLoader> with TickerProviderStateMixin {
         try {
           await GitManagerRs.clearStaleLocks(queueDir: (await getApplicationSupportDirectory()).path, force: true);
         } catch (e) {}
-        gitSyncService.isScheduled = false;
+        gitSyncService.scheduledIndices.clear();
         gitSyncService.isSyncing = false;
         locked = null;
         setState(() {});

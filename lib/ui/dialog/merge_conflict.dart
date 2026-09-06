@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:GitSync/api/manager/storage.dart';
 import 'package:GitSync/main.dart';
+import 'package:GitSync/ui/component/ai_wand_field.dart';
+import 'package:GitSync/api/ai_completion_service.dart';
 import 'package:animated_reorderable_list/animated_reorderable_list.dart';
 import 'package:flutter/material.dart' as mat;
 import 'package:flutter/material.dart';
@@ -239,8 +241,8 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
       final midIdx = lines.indexWhere((line) => line.contains(conflictSeparator));
       final endIdx = lines.indexWhere((line) => line.contains(conflictEnd));
 
-      final remoteLines = lines.sublist(startIdx + 1, midIdx).indexed;
-      final localLines = lines.sublist(midIdx + 1, endIdx).indexed;
+      final localLines = lines.sublist(startIdx + 1, midIdx).indexed;
+      final remoteLines = lines.sublist(midIdx + 1, endIdx).indexed;
 
       conflictSections.removeAt(i);
       if (mode == 'local') {
@@ -306,34 +308,64 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
                     style: TextStyle(color: colours.secondaryLight, fontWeight: FontWeight.bold, fontSize: textSM),
                   ),
                   SizedBox(height: spaceMD + spaceSM),
-                  TextField(
-                    contextMenuBuilder: globalContextMenuBuilder,
-                    controller: commitMessageController,
-                    maxLines: null,
-                    style: TextStyle(
-                      color: colours.primaryLight,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.none,
-                      decorationThickness: 0,
-                      fontSize: textMD,
-                    ),
-                    decoration: InputDecoration(
-                      fillColor: colours.secondaryDark,
-                      filled: true,
-                      border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
-                      hintText: syncMessage,
-                      isCollapsed: true,
-                      label: Text(
-                        t.commitMessage.toUpperCase(),
-                        style: TextStyle(color: colours.secondaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
-                      ),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM),
-                      isDense: true,
-                    ),
-                    onChanged: (_) {
-                      setState(() {});
+                  AiWandField(
+                    multiline: true,
+                    enabled: conflictingPaths.length <= 1 && conflictSections.indexWhere((section) => section.$2.contains("\n")) == -1,
+                    onPressed: () async {
+                      final allFilePaths = originalConflictingPaths.map((e) => e.$1).toList();
+                      final buffer = StringBuffer('Merge conflict resolution.\n\nConflicting files:\n');
+                      for (final path in allFilePaths) {
+                        buffer.writeln('- $path');
+                        final diff = await GitManager.getWorkdirFileDiff(path);
+                        if (diff != null && diff.lines.isNotEmpty) {
+                          buffer.writeln('+${diff.insertions}/-${diff.deletions}');
+                          for (final line in diff.lines) {
+                            if (buffer.length > 4000) break;
+                            if (line.origin == 'H') {
+                              buffer.writeln(line.content);
+                            } else {
+                              buffer.writeln('${line.origin}${line.content}');
+                            }
+                          }
+                        }
+                        buffer.writeln();
+                        if (buffer.length > 4000) break;
+                      }
+                      final result = await aiComplete(
+                        systemPrompt: "Generate a merge conflict resolution commit message. Output only the commit message, nothing else.",
+                        userPrompt: buffer.toString(),
+                      );
+                      if (result != null) commitMessageController.text = result.trim();
                     },
+                    child: TextField(
+                      contextMenuBuilder: globalContextMenuBuilder,
+                      controller: commitMessageController,
+                      maxLines: null,
+                      style: TextStyle(
+                        color: colours.primaryLight,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.none,
+                        decorationThickness: 0,
+                        fontSize: textMD,
+                      ),
+                      decoration: InputDecoration(
+                        fillColor: colours.secondaryDark,
+                        filled: true,
+                        border: const OutlineInputBorder(borderRadius: BorderRadius.all(cornerRadiusSM), borderSide: BorderSide.none),
+                        hintText: syncMessage,
+                        isCollapsed: true,
+                        label: Text(
+                          t.commitMessage.toUpperCase(),
+                          style: TextStyle(color: colours.secondaryLight, fontSize: textSM, fontWeight: FontWeight.bold),
+                        ),
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM),
+                        isDense: true,
+                      ),
+                      onChanged: (_) {
+                        setState(() {});
+                      },
+                    ),
                   ),
                   SizedBox(height: spaceMD),
                   (expanded ? (Widget child) => Expanded(child: child) : (child) => child)(
@@ -347,7 +379,7 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
                               Expanded(
                                 child: TextButton.icon(
                                   onPressed: () async =>
-                                      OpenFile.open("${await uiSettingsManager.gitDirPath?.$2}/${conflictingPaths[conflictIndex].$1}"),
+                                      OpenFile.open("${(await uiSettingsManager.getGitDirPath())?.$2}/${conflictingPaths[conflictIndex].$1}"),
                                   style: ButtonStyle(
                                     alignment: Alignment.centerLeft,
                                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -465,7 +497,7 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
                                         ),
                                       ),
                                       child: Text(
-                                        t.allLocal.toUpperCase(),
+                                        t.allCurrent.toUpperCase(),
                                         style: TextStyle(color: colours.tertiaryInfo, fontWeight: FontWeight.bold, fontSize: textXS),
                                       ),
                                     ),
@@ -509,7 +541,7 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
                                         ),
                                       ),
                                       child: Text(
-                                        t.allRemote.toUpperCase(),
+                                        t.allIncoming.toUpperCase(),
                                         style: TextStyle(color: colours.tertiaryWarning, fontWeight: FontWeight.bold, fontSize: textXS),
                                       ),
                                     ),
@@ -544,8 +576,8 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
                                                   final midIndex = lines.indexWhere((line) => line.contains(conflictSeparator));
                                                   final endIndex = lines.indexWhere((line) => line.contains(conflictEnd));
 
-                                                  final remoteLines = lines.sublist(startIndex + 1, midIndex).indexed;
-                                                  final localLines = lines.sublist(midIndex + 1, endIndex).indexed;
+                                                  final localLines = lines.sublist(startIndex + 1, midIndex).indexed;
+                                                  final remoteLines = lines.sublist(midIndex + 1, endIndex).indexed;
 
                                                   return AnchorItemWrapper(
                                                     key: Key("${item.$1}//${item.$2}"),
@@ -671,7 +703,7 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
                                                                           ),
                                                                         ),
                                                                         child: Text(
-                                                                          t.local.toUpperCase(),
+                                                                           t.current.toUpperCase(),
                                                                           style: TextStyle(color: colours.secondaryDark, fontWeight: FontWeight.bold),
                                                                         ),
                                                                       ),
@@ -736,7 +768,7 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
                                                                           ),
                                                                         ),
                                                                         child: Text(
-                                                                          t.remote.toUpperCase(),
+                                                                           t.incoming.toUpperCase(),
                                                                           style: TextStyle(color: colours.secondaryDark, fontWeight: FontWeight.bold),
                                                                         ),
                                                                       ),
@@ -881,7 +913,9 @@ Future<void> showDialog(BuildContext parentContext, List<(String, GitManagerRs.C
 
                       closeMmap();
                       await runGitOperation(LogType.AbortMerge, (event) => event);
-                      Navigator.of(parentContext).canPop() ? Navigator.pop(parentContext) : null;
+                      isAborting = false;
+                      setState(() {});
+                      Navigator.of(context).canPop() ? Navigator.pop(context) : null;
                     },
                     style: ButtonStyle(
                       alignment: Alignment.center,

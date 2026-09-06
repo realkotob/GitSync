@@ -5,11 +5,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 import 'app_localizations_fr.dart';
 import 'app_localizations_ja.dart';
+import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
@@ -97,10 +99,12 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
+    Locale('ar'),
     Locale('en'),
     Locale('es'),
     Locale('fr'),
     Locale('ja'),
+    Locale('pt'),
     Locale('ru'),
     Locale('zh'),
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
@@ -111,6 +115,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get dismiss;
+
+  /// No description provided for @dontShowAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t Show Again'**
+  String get dontShowAgain;
 
   /// No description provided for @skip.
   ///
@@ -363,24 +373,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restore Purchase'**
   String get restorePurchase;
-
-  /// No description provided for @verifyGhSponsorTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify GitHub Sponsorship'**
-  String get verifyGhSponsorTitle;
-
-  /// No description provided for @verifyGhSponsorMsg.
-  ///
-  /// In en, this message translates to:
-  /// **'If you are a GitHub Sponsor, you can access premium features for free. Authenticate with GitHub so we can verify your sponsor status.'**
-  String get verifyGhSponsorMsg;
-
-  /// No description provided for @verifyGhSponsorNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Note: new sponsorships may take up to 1 day to become available in the app.'**
-  String get verifyGhSponsorNote;
 
   /// No description provided for @premiumStoreOnlyBanner.
   ///
@@ -826,11 +818,11 @@ abstract class AppLocalizations {
   /// **'Keep Changes'**
   String get keepChanges;
 
-  /// No description provided for @local.
+  /// No description provided for @current.
   ///
   /// In en, this message translates to:
-  /// **'Local'**
-  String get local;
+  /// **'Current'**
+  String get current;
 
   /// No description provided for @both.
   ///
@@ -843,6 +835,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remote'**
   String get remote;
+
+  /// No description provided for @incoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming'**
+  String get incoming;
 
   /// No description provided for @merge.
   ///
@@ -886,17 +884,17 @@ abstract class AppLocalizations {
   /// **'Resolve All'**
   String get resolveAll;
 
-  /// No description provided for @allLocal.
+  /// No description provided for @allCurrent.
   ///
   /// In en, this message translates to:
-  /// **'All Local'**
-  String get allLocal;
+  /// **'All Current'**
+  String get allCurrent;
 
-  /// No description provided for @allRemote.
+  /// No description provided for @allIncoming.
   ///
   /// In en, this message translates to:
-  /// **'All Remote'**
-  String get allRemote;
+  /// **'All Incoming'**
+  String get allIncoming;
 
   /// No description provided for @iosClearDataTitle.
   ///
@@ -1606,6 +1604,96 @@ abstract class AppLocalizations {
   /// **'Launch the wiki'**
   String get onboardingLaunchWiki;
 
+  /// No description provided for @onboardingHowYouFoundUsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How did you discover GitSync?'**
+  String get onboardingHowYouFoundUsTitle;
+
+  /// No description provided for @onboardingHowYouFoundUsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help us understand where our users come from (select all that apply)'**
+  String get onboardingHowYouFoundUsSubtitle;
+
+  /// No description provided for @sourceReddit.
+  ///
+  /// In en, this message translates to:
+  /// **'Reddit'**
+  String get sourceReddit;
+
+  /// No description provided for @sourceYoutube.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube'**
+  String get sourceYoutube;
+
+  /// No description provided for @sourceDiscord.
+  ///
+  /// In en, this message translates to:
+  /// **'Discord'**
+  String get sourceDiscord;
+
+  /// No description provided for @sourceMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get sourceMedium;
+
+  /// No description provided for @sourceGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Search'**
+  String get sourceGoogle;
+
+  /// No description provided for @sourceGithubFdroid.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub / F-Droid'**
+  String get sourceGithubFdroid;
+
+  /// No description provided for @sourceStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Store / App Store'**
+  String get sourceStore;
+
+  /// No description provided for @sourceWordOfMouth.
+  ///
+  /// In en, this message translates to:
+  /// **'Word of mouth'**
+  String get sourceWordOfMouth;
+
+  /// No description provided for @sourceAdvertisements.
+  ///
+  /// In en, this message translates to:
+  /// **'Advertisements'**
+  String get sourceAdvertisements;
+
+  /// No description provided for @sourceObsidian.
+  ///
+  /// In en, this message translates to:
+  /// **'Obsidian Git Plugin'**
+  String get sourceObsidian;
+
+  /// No description provided for @sourceAiSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Search (ChatGPT, Claude, Grok)'**
+  String get sourceAiSearch;
+
+  /// No description provided for @sourceOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get sourceOther;
+
+  /// No description provided for @sourceOtherHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us where'**
+  String get sourceOtherHint;
+
   /// No description provided for @currentBranch.
   ///
   /// In en, this message translates to:
@@ -1810,11 +1898,11 @@ abstract class AppLocalizations {
   /// **'Automatically syncs periodically in the background'**
   String get scheduledSyncDescription;
 
-  /// No description provided for @sync.
+  /// No description provided for @tabHome.
   ///
   /// In en, this message translates to:
-  /// **'Sync'**
-  String get sync;
+  /// **'Home'**
+  String get tabHome;
 
   /// No description provided for @iosDefaultSyncRate.
   ///
@@ -1965,6 +2053,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use for Manual Sync Widget'**
   String get useForWidgetManualSync;
+
+  /// No description provided for @remoteAuthMismatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auth won\'t work with this remote'**
+  String get remoteAuthMismatchTitle;
+
+  /// No description provided for @remoteAuthMismatchUsesSsh.
+  ///
+  /// In en, this message translates to:
+  /// **'This remote uses SSH — tap to switch'**
+  String get remoteAuthMismatchUsesSsh;
+
+  /// No description provided for @remoteAuthMismatchUsesHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'This remote uses HTTPS or OAuth — tap to switch'**
+  String get remoteAuthMismatchUsesHttps;
 
   /// No description provided for @selectYourGitProviderAndAuthenticate.
   ///
@@ -2926,6 +3032,18 @@ abstract class AppLocalizations {
   /// **'View the full git log history'**
   String get viewGitLogDescription;
 
+  /// No description provided for @openInTextastic.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Textastic'**
+  String get openInTextastic;
+
+  /// No description provided for @openInTextasticDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Open file in Textastic app'**
+  String get openInTextasticDescription;
+
   /// No description provided for @ignoreUntrack.
   ///
   /// In en, this message translates to:
@@ -3841,7 +3959,7 @@ abstract class AppLocalizations {
   /// No description provided for @unsupportedGitAttributes.
   ///
   /// In en, this message translates to:
-  /// **'This repo uses git features only available in store versions.'**
+  /// **'This repo uses git filters, only available in store versions.'**
   String get unsupportedGitAttributes;
 
   /// No description provided for @tapToOpenPlayStore.
@@ -3867,6 +3985,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network unavailable!\nGitSync will retry when reconnected'**
   String get networkUnavailableRetry;
+
+  /// No description provided for @networkStallManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor network — please try again'**
+  String get networkStallManual;
+
+  /// No description provided for @networkUnavailableManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Network unavailable — please try again'**
+  String get networkUnavailableManual;
+
+  /// No description provided for @networkRetryComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued operation completed'**
+  String get networkRetryComplete;
 
   /// No description provided for @failedToResolveAddressMessage.
   ///
@@ -4047,6 +4183,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Track Issue & Respond to Messages'**
   String get trackIssue;
+
+  /// No description provided for @issueDuplicateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already Reported'**
+  String get issueDuplicateTitle;
+
+  /// No description provided for @issueDuplicateMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'This bug has already been reported and is being tracked in an open issue. \n\nOpen the issue to follow progress, or send your report as a message there so it reaches us without creating a duplicate.'**
+  String get issueDuplicateMsg;
+
+  /// No description provided for @viewIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'View Issue'**
+  String get viewIssue;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send As Message'**
+  String get sendMessage;
+
+  /// No description provided for @issueCommentSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Message Sent'**
+  String get issueCommentSuccessTitle;
+
+  /// No description provided for @issueCommentSuccessMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Your report has been added to the existing issue. Bookmark this page to track progress and respond to messages. \n\nIssues with no activity for 7 days are automatically closed.'**
+  String get issueCommentSuccessMsg;
+
+  /// No description provided for @issueCommentFailedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message couldn’t be sent. Please check your connection and try again.'**
+  String get issueCommentFailedMsg;
 
   /// No description provided for @createNewRepository.
   ///
@@ -4581,6 +4759,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Provider Tools'**
   String get providerTools;
+
+  /// No description provided for @tabChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get tabChat;
+
+  /// No description provided for @tabFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get tabFiles;
+
+  /// No description provided for @chatComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat features coming soon'**
+  String get chatComingSoon;
+
+  /// No description provided for @chatComingSoonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Interact with your files using Claude Code'**
+  String get chatComingSoonSubtitle;
+
+  /// No description provided for @noRepoSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up a repository first'**
+  String get noRepoSetup;
+
+  /// No description provided for @enableAiFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI Features'**
+  String get enableAiFeatures;
+
+  /// No description provided for @hideAiFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide AI Features'**
+  String get hideAiFeatures;
+
+  /// No description provided for @hideAiFeaturesConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide AI Features?'**
+  String get hideAiFeaturesConfirmTitle;
+
+  /// No description provided for @hideAiFeaturesConfirmMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.'**
+  String get hideAiFeaturesConfirmMsg;
+
+  /// No description provided for @aiSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up AI'**
+  String get aiSetupTitle;
+
+  /// No description provided for @aiSetupMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure an AI provider to use this feature. Go to AI settings?'**
+  String get aiSetupMsg;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -4592,7 +4836,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['de', 'en', 'es', 'fr', 'ja', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'ar', 'en', 'es', 'fr', 'ja', 'pt', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -4615,6 +4859,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'de':
       return AppLocalizationsDe();
+    case 'ar':
+      return AppLocalizationsAr();
     case 'en':
       return AppLocalizationsEn();
     case 'es':
@@ -4623,6 +4869,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsFr();
     case 'ja':
       return AppLocalizationsJa();
+    case 'pt':
+      return AppLocalizationsPt();
     case 'ru':
       return AppLocalizationsRu();
     case 'zh':

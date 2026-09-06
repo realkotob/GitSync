@@ -12,6 +12,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get dismiss => 'Ignorer';
 
   @override
+  String get dontShowAgain => 'Ne plus afficher';
+
+  @override
   String get skip => 'Passer';
 
   @override
@@ -48,13 +51,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rename => 'Renommer';
 
   @override
-  String get renameDescription => 'Rename the selected file or folder';
+  String get renameDescription => 'Renommer le fichier ou dossier sélectionné';
 
   @override
-  String get selectAllDescription => 'Select all visible files and folders';
+  String get selectAllDescription => 'Sélectionner tous les fichiers et dossiers visibles';
 
   @override
-  String get deselectAllDescription => 'Deselect all selected files and folders';
+  String get deselectAllDescription => 'Désélectionner tous les fichiers et dossiers sélectionnés';
 
   @override
   String get add => 'Ajouter';
@@ -138,83 +141,74 @@ class AppLocalizationsFr extends AppLocalizations {
   String get restorePurchase => 'Restaurer l\'achat';
 
   @override
-  String get verifyGhSponsorTitle => 'Vérifier le sponsor GitHub';
+  String get premiumStoreOnlyBanner => 'Version boutique uniquement — Disponible sur l\'App Store ou le Play Store';
 
   @override
-  String get verifyGhSponsorMsg =>
-      'Si vous êtes un sponsor GitHub, vous pouvez accéder gratuitement aux fonctionnalités premium. Authentifiez-vous auprès de GitHub pour vérifier votre statut de sponsor.';
+  String get premiumMultiRepoTitle => 'Gérer plusieurs dépôts';
 
   @override
-  String get verifyGhSponsorNote => 'Remarque : les nouveaux parrainages peuvent prendre jusqu\'à 1 jour pour être disponibles dans l\'application.';
+  String get premiumMultiRepoSubtitle => 'Une seule app. Tous vos dépôts.\nChacun avec ses propres identifiants et paramètres.';
 
   @override
-  String get premiumStoreOnlyBanner => 'Store version only — Get it on the App Store or Play Store';
+  String get premiumUnlimitedContainers => 'Conteneurs illimités';
 
   @override
-  String get premiumMultiRepoTitle => 'Manage Multiple Repos';
+  String get premiumIndependentAuth => 'Auth indépendante par dépôt';
 
   @override
-  String get premiumMultiRepoSubtitle => 'One app. All your repositories.\nEach with its own credentials and settings.';
+  String get premiumAutoAddSubmodules => 'Ajout auto des sous-modules';
 
   @override
-  String get premiumUnlimitedContainers => 'Unlimited containers';
+  String get premiumEnhancedSyncSubtitle => 'Synchronisation automatique en arrière-plan sur iOS.\nJusqu\'à une fois par minute.';
 
   @override
-  String get premiumIndependentAuth => 'Independent auth per repo';
+  String get premiumSyncPerMinute => 'Synchro jusqu\'à chaque minute';
 
   @override
-  String get premiumAutoAddSubmodules => 'Auto-add submodules';
+  String get premiumServerTriggered => 'Notifications push du serveur';
 
   @override
-  String get premiumEnhancedSyncSubtitle => 'Automated background sync on iOS.\nAs low as once per minute.';
+  String get premiumWorksAppClosed => 'Fonctionne même quand l\'app est fermée';
 
   @override
-  String get premiumSyncPerMinute => 'Sync as often as every minute';
-
-  @override
-  String get premiumServerTriggered => 'Server push notifications';
-
-  @override
-  String get premiumWorksAppClosed => 'Works even when app is closed';
-
-  @override
-  String get premiumReliableDelivery => 'Reliable, on-schedule delivery';
+  String get premiumReliableDelivery => 'Distribution fiable et ponctuelle';
 
   @override
   String get premiumGitLfsTitle => 'Git LFS';
 
   @override
-  String get premiumGitLfsSubtitle => 'Full support for Git Large File Storage.\nSync repos with large binary files effortlessly.';
+  String get premiumGitLfsSubtitle =>
+      'Prise en charge complète de Git Large File Storage.\nSynchronisez les dépôts avec des fichiers binaires volumineux sans effort.';
 
   @override
-  String get premiumFullLfsSupport => 'Full Git LFS support';
+  String get premiumFullLfsSupport => 'Prise en charge complète de Git LFS';
 
   @override
-  String get premiumTrackLargeFiles => 'Track large binary files';
+  String get premiumTrackLargeFiles => 'Suivre les fichiers binaires volumineux';
 
   @override
-  String get premiumAutoLfsPullPush => 'Automatic LFS pull/push';
+  String get premiumAutoLfsPullPush => 'Pull/push LFS automatique';
 
   @override
-  String get premiumGitFiltersTitle => 'Git Filters';
+  String get premiumGitFiltersTitle => 'Filtres Git';
 
   @override
-  String get premiumGitFiltersSubtitle => 'Support for git filters including git-lfs,\ngit-crypt, and more coming soon.';
+  String get premiumGitFiltersSubtitle => 'Prise en charge des filtres git dont git-lfs,\ngit-crypt, et d\'autres à venir.';
 
   @override
-  String get premiumGitLfsFilter => 'git-lfs filter';
+  String get premiumGitLfsFilter => 'Filtre git-lfs';
 
   @override
-  String get premiumGitCryptFilter => 'git-crypt filter';
+  String get premiumGitCryptFilter => 'Filtre git-crypt';
 
   @override
-  String get premiumMoreFiltersSoon => 'More filters coming soon';
+  String get premiumMoreFiltersSoon => 'Plus de filtres à venir';
 
   @override
   String get premiumGitHooksTitle => 'Git Hooks';
 
   @override
-  String get premiumGitHooksSubtitle => 'Run pre-commit hooks automatically\nbefore every sync.';
+  String get premiumGitHooksSubtitle => 'Exécutez les hooks pre-commit automatiquement\navant chaque synchronisation.';
 
   @override
   String get premiumHookTrailingWhitespace => 'trailing-whitespace';
@@ -238,19 +232,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get switchToSyncMode => 'Passer en mode sync…';
 
   @override
-  String get defaultTo => 'Default to';
+  String get defaultTo => 'Par défaut';
 
   @override
   String get clientMode => 'Mode client';
 
   @override
-  String get clientModeDescription => 'Expanded Git UI\n(Advanced)';
+  String get clientModeDescription => 'Interface Git étendue\n(Avancé)';
 
   @override
   String get syncMode => 'Mode sync';
 
   @override
-  String get syncModeDescription => 'Automated syncing\n(Beginner-friendly)';
+  String get syncModeDescription => 'Synchronisation automatique\n(Débutant)';
 
   @override
   String get syncNow => 'Sync les modifications';
@@ -283,7 +277,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pushChanges => 'Envoyer les modifications';
 
   @override
-  String get updateSubmodules => 'Mettre à jour les sous-modules';
+  String get updateSubmodules => 'MAJ sous-modules';
 
   @override
   String get forcePush => 'Push forcé';
@@ -324,13 +318,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get manualSyncMsg => 'Sélectionnez les fichiers que vous souhaitez synchroniser';
 
   @override
-  String get commit => 'Commit';
+  String get commit => 'Valider';
 
   @override
-  String get unstage => 'Unstage';
+  String get unstage => 'Désindexer';
 
   @override
-  String get stage => 'Stage';
+  String get stage => 'Indexer';
 
   @override
   String get selectAll => 'Tout sélectionner';
@@ -366,13 +360,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get abortMerge => 'Abandonner la fusion';
 
   @override
-  String get resolveLater => 'Resolve Later';
+  String get resolveLater => 'Résoudre plus tard';
 
   @override
   String get keepChanges => 'Conserver les modifications';
 
   @override
-  String get local => 'Local';
+  String get current => 'Actuel';
 
   @override
   String get both => 'Les deux';
@@ -381,31 +375,34 @@ class AppLocalizationsFr extends AppLocalizations {
   String get remote => 'Distant';
 
   @override
+  String get incoming => 'Entrant';
+
+  @override
   String get merge => 'Fusionner';
 
   @override
-  String get resolve => 'Resolve';
+  String get resolve => 'Résoudre';
 
   @override
   String get merging => 'Fusion en cours…';
 
   @override
-  String get resolving => 'Resolving…';
+  String get resolving => 'Résolution…';
 
   @override
-  String get clearSelection => 'Clear Selection';
+  String get clearSelection => 'Effacer la sélection';
 
   @override
-  String get keepSelected => 'Keep Selected';
+  String get keepSelected => 'Garder la sélection';
 
   @override
-  String get resolveAll => 'Resolve All';
+  String get resolveAll => 'Tout résoudre';
 
   @override
-  String get allLocal => 'All Local';
+  String get allCurrent => 'Tout actuel';
 
   @override
-  String get allRemote => 'All Remote';
+  String get allIncoming => 'Tout entrant';
 
   @override
   String get iosClearDataTitle => 'Est-ce une nouvelle installation ?';
@@ -422,7 +419,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Cela supprimera définitivement toutes les données de l\'application, y compris les entrées du Trousseau. Êtes-vous sûr de vouloir continuer ?';
 
   @override
-  String get iosClearDataAction => 'Effacer toutes les données';
+  String get iosClearDataAction => 'Tout effacer';
 
   @override
   String get legacyAppUserDialogTitle => 'Bienvenue dans la nouvelle version !';
@@ -442,7 +439,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get setUp => 'Configurer';
 
   @override
-  String get welcomeSetupPrompt => 'Would you like to go through a quick setup to get started?';
+  String get welcomeSetupPrompt => 'Souhaitez-vous faire une configuration rapide pour commencer ?';
 
   @override
   String get welcomePositive => 'Allons-y';
@@ -470,43 +467,43 @@ class AppLocalizationsFr extends AppLocalizations {
   String get goToSettings => 'Aller aux paramètres';
 
   @override
-  String get onboardingSyncSettingsTitle => 'Sync Settings';
+  String get onboardingSyncSettingsTitle => 'Paramètres de synchro';
 
   @override
-  String get onboardingSyncSettingsSubtitle => 'Choose how to keep your repos in sync.';
+  String get onboardingSyncSettingsSubtitle => 'Choisissez comment synchroniser vos dépôts.';
 
   @override
-  String get onboardingAppSyncFeatureOpen => 'Trigger sync on app open';
+  String get onboardingAppSyncFeatureOpen => 'Déclencher la synchro à l\'ouverture de l\'app';
 
   @override
-  String get onboardingAppSyncFeatureClose => 'Trigger sync on app close';
+  String get onboardingAppSyncFeatureClose => 'Déclencher la synchro à la fermeture de l\'app';
 
   @override
-  String get onboardingAppSyncFeatureSelect => 'Select which apps to monitor';
+  String get onboardingAppSyncFeatureSelect => 'Sélectionner les apps à surveiller';
 
   @override
-  String get onboardingScheduledSyncFeatureFreq => 'Set your preferred sync frequency';
+  String get onboardingScheduledSyncFeatureFreq => 'Définir la fréquence de synchro';
 
   @override
-  String get onboardingScheduledSyncFeatureCustom => 'Choose custom intervals on Android';
+  String get onboardingScheduledSyncFeatureCustom => 'Choisir des intervalles personnalisés sur Android';
 
   @override
-  String get onboardingScheduledSyncFeatureBg => 'Works in the background';
+  String get onboardingScheduledSyncFeatureBg => 'Fonctionne en arrière-plan';
 
   @override
-  String get onboardingQuickSyncFeatureTile => 'Sync via Quick Settings tile';
+  String get onboardingQuickSyncFeatureTile => 'Synchro via la vignette de réglages rapides';
 
   @override
-  String get onboardingQuickSyncFeatureShortcut => 'Sync via app shortcuts';
+  String get onboardingQuickSyncFeatureShortcut => 'Synchro via les raccourcis de l\'app';
 
   @override
-  String get onboardingQuickSyncFeatureWidget => 'Sync via home screen widget';
+  String get onboardingQuickSyncFeatureWidget => 'Synchro via le widget d\'écran d\'accueil';
 
   @override
-  String get onboardingOtherSyncFeatureAndroid => 'Android intents';
+  String get onboardingOtherSyncFeatureAndroid => 'Intents Android';
 
   @override
-  String get onboardingOtherSyncFeatureIos => 'iOS intents';
+  String get onboardingOtherSyncFeatureIos => 'Intents iOS';
 
   @override
   String get onboardingOtherSyncDescription => 'Explore additional sync methods for your platform';
@@ -515,271 +512,316 @@ class AppLocalizationsFr extends AppLocalizations {
   String get onboardingTapToConfigure => 'Tap to configure';
 
   @override
-  String get showcaseGlobalSettingsTitle => 'Global Settings';
+  String get showcaseGlobalSettingsTitle => 'Paramètres globaux';
 
   @override
-  String get showcaseGlobalSettingsSubtitle => 'Your app-wide preferences and tools.';
+  String get showcaseGlobalSettingsSubtitle => 'Vos préférences et outils à l\'échelle de l\'app.';
 
   @override
-  String get showcaseGlobalSettingsFeatureTheme => 'Adjust theme, language, and display options';
+  String get showcaseGlobalSettingsFeatureTheme => 'Ajuster le thème, la langue et les options d\'affichage';
 
   @override
-  String get showcaseGlobalSettingsFeatureBackup => 'Back up or restore your configuration';
+  String get showcaseGlobalSettingsFeatureBackup => 'Sauvegarder ou restaurer votre configuration';
 
   @override
-  String get showcaseGlobalSettingsFeatureSetup => 'Restart the guided setup or UI tour';
+  String get showcaseGlobalSettingsFeatureSetup => 'Relancer la configuration guidée ou la visite';
 
   @override
-  String get showcaseSyncProgressTitle => 'Sync Status';
+  String get showcaseSyncProgressTitle => 'Statut de la synchro';
 
   @override
-  String get showcaseSyncProgressSubtitle => 'See what\'s happening at a glance.';
+  String get showcaseSyncProgressSubtitle => 'Voyez ce qui se passe en un coup d\'œil.';
 
   @override
-  String get showcaseSyncProgressFeatureWatch => 'Watch active sync operations in real time';
+  String get showcaseSyncProgressFeatureWatch => 'Suivez les opérations de synchro en temps réel';
 
   @override
-  String get showcaseSyncProgressFeatureConfirm => 'Confirms when a sync completes successfully';
+  String get showcaseSyncProgressFeatureConfirm => 'Confirme quand une synchro réussit';
 
   @override
-  String get showcaseSyncProgressFeatureErrors => 'Tap to view errors or open the log viewer';
+  String get showcaseSyncProgressFeatureErrors => 'Tapez pour voir les erreurs ou ouvrir le journal';
 
   @override
-  String get showcaseAddMoreTitle => 'Your Containers';
+  String get showcaseAddMoreTitle => 'Vos conteneurs';
 
   @override
-  String get showcaseAddMoreSubtitle => 'Manage multiple repositories in one place.';
+  String get showcaseAddMoreSubtitle => 'Gérez plusieurs dépôts en un seul endroit.';
 
   @override
-  String get showcaseAddMoreFeatureSwitch => 'Switch between repo containers instantly';
+  String get showcaseAddMoreFeatureSwitch => 'Basculez instantanément entre les conteneurs';
 
   @override
-  String get showcaseAddMoreFeatureManage => 'Rename or delete containers as needed';
+  String get showcaseAddMoreFeatureManage => 'Renommez ou supprimez les conteneurs selon vos besoins';
 
   @override
-  String get showcaseAddMoreFeaturePremium => 'Add more containers with Premium';
+  String get showcaseAddMoreFeaturePremium => 'Ajoutez plus de conteneurs avec Premium';
 
   @override
-  String get showcaseControlTitle => 'Sync Controls';
+  String get showcaseControlTitle => 'Contrôles de synchro';
 
   @override
-  String get showcaseControlSubtitle => 'Your hands-on sync and commit tools.';
+  String get showcaseControlSubtitle => 'Vos outils de synchronisation et de validation.';
 
   @override
-  String get showcaseControlFeatureSync => 'Trigger a manual sync with one tap';
+  String get showcaseControlFeatureSync => 'Déclencher une synchro manuelle d\'une tape';
 
   @override
-  String get showcaseControlFeatureHistory => 'View your recent commit history';
+  String get showcaseControlFeatureHistory => 'Voir l\'historique des validations récentes';
 
   @override
-  String get showcaseControlFeatureConflicts => 'Resolve merge conflicts when they arise';
+  String get showcaseControlFeatureConflicts => 'Résoudre les conflits de fusion';
 
   @override
-  String get showcaseControlFeatureMore => 'Access force push, force pull, and more';
+  String get showcaseControlFeatureMore => 'Accéder au push forcé, pull forcé, etc.';
 
   @override
-  String get showcaseAutoSyncTitle => 'Auto Sync';
+  String get showcaseAutoSyncTitle => 'Synchro automatique';
 
   @override
-  String get showcaseAutoSyncSubtitle => 'Keep your repos in sync automatically.';
+  String get showcaseAutoSyncSubtitle => 'Gardez vos dépôts synchronisés automatiquement.';
 
   @override
-  String get showcaseAutoSyncFeatureApp => 'Sync when selected apps open or close';
+  String get showcaseAutoSyncFeatureApp => 'Synchroniser quand des apps sélectionnées s\'ouvrent ou se ferment';
 
   @override
-  String get showcaseAutoSyncFeatureSchedule => 'Schedule periodic background syncs';
+  String get showcaseAutoSyncFeatureSchedule => 'Planifier des synchronisations périodiques en arrière-plan';
 
   @override
-  String get showcaseAutoSyncFeatureQuick => 'Sync via quick tiles, shortcuts, or widgets';
+  String get showcaseAutoSyncFeatureQuick => 'Synchroniser via les vignettes rapides, raccourcis ou widgets';
 
   @override
-  String get showcaseAutoSyncFeaturePremium => 'Unlock enhanced sync rates with Premium';
+  String get showcaseAutoSyncFeaturePremium => 'Débloquez des vitesses de synchro améliorées avec Premium';
 
   @override
-  String get showcaseSetupGuideTitle => 'Setup & Guide';
+  String get showcaseSetupGuideTitle => 'Configuration et guide';
 
   @override
-  String get showcaseSetupGuideSubtitle => 'Revisit the walkthrough anytime.';
+  String get showcaseSetupGuideSubtitle => 'Revisitez le guide à tout moment.';
 
   @override
-  String get showcaseSetupGuideFeatureSetup => 'Re-run the guided setup from scratch';
+  String get showcaseSetupGuideFeatureSetup => 'Relancer la configuration guidée';
 
   @override
-  String get showcaseSetupGuideFeatureTour => 'Take a quick tour of the UI highlights';
+  String get showcaseSetupGuideFeatureTour => 'Faire une visite rapide des points forts de l\'interface';
 
   @override
-  String get showcaseRepoTitle => 'Your Repository';
+  String get showcaseRepoTitle => 'Votre dépôt';
 
   @override
-  String get showcaseRepoSubtitle => 'Your command center for managing this repository.';
+  String get showcaseRepoSubtitle => 'Votre centre de commande pour gérer ce dépôt.';
 
   @override
-  String get showcaseRepoFeatureAuth => 'Authenticate with your git provider';
+  String get showcaseRepoFeatureAuth => 'Authentifiez-vous avec votre fournisseur git';
 
   @override
-  String get showcaseRepoFeatureDir => 'Switch or select your local directory';
+  String get showcaseRepoFeatureDir => 'Changez ou sélectionnez votre dossier local';
 
   @override
-  String get showcaseRepoFeatureBrowse => 'Browse and edit files directly';
+  String get showcaseRepoFeatureBrowse => 'Parcourez et éditez les fichiers directement';
 
   @override
-  String get showcaseRepoFeatureRemote => 'View or change the remote URL';
+  String get showcaseRepoFeatureRemote => 'Voir ou modifier l\'URL du dépôt distant';
 
   @override
-  String get onboardingClientMode => 'Client Mode';
+  String get onboardingClientMode => 'Mode Client';
 
   @override
-  String get onboardingClientModeDescription => 'Everything you would expect from a git client';
+  String get onboardingClientModeDescription => 'Tout ce que vous attendez d\'un client git';
 
   @override
-  String get onboardingClientFeatureBranch => 'Branch management';
+  String get onboardingClientFeatureBranch => 'Gestion des branches';
 
   @override
-  String get onboardingClientFeatureCommit => 'Manual commit & push';
+  String get onboardingClientFeatureCommit => 'Validation et push manuels';
 
   @override
-  String get onboardingClientFeatureDiff => 'Diff viewer';
+  String get onboardingClientFeatureDiff => 'Visualisateur de différences';
 
   @override
-  String get onboardingSyncMode => 'Sync Mode';
+  String get onboardingSyncMode => 'Mode Synchronisation';
 
   @override
-  String get onboardingSyncModeDescription => 'Automated file syncing in the background';
+  String get onboardingSyncModeDescription => 'Synchronisation automatique des fichiers en arrière-plan';
 
   @override
-  String get onboardingSyncFeatureAutoCommit => 'Auto commit & push';
+  String get onboardingSyncFeatureAutoCommit => 'Validation et push automatiques';
 
   @override
-  String get onboardingSyncFeatureBackground => 'Background operation';
+  String get onboardingSyncFeatureBackground => 'Fonctionnement en arrière-plan';
 
   @override
-  String get onboardingSyncFeatureConflict => 'Easy conflict resolution';
+  String get onboardingSyncFeatureConflict => 'Résolution facile des conflits';
 
   @override
-  String get onboardingFileExplorer => 'File Explorer';
+  String get onboardingFileExplorer => 'Explorateur de fichiers';
 
   @override
-  String get onboardingBrowseFeatureHidden => 'View hidden files';
+  String get onboardingBrowseFeatureHidden => 'Voir les fichiers cachés';
 
   @override
-  String get onboardingBrowseFeatureLog => 'View git log';
+  String get onboardingBrowseFeatureLog => 'Voir le journal git';
 
   @override
-  String get onboardingBrowseFeatureIgnore => 'Untrack and ignore files';
+  String get onboardingBrowseFeatureIgnore => 'Désindexer et ignorer des fichiers';
 
   @override
-  String get onboardingCodeEditor => 'Code Editor';
+  String get onboardingCodeEditor => 'Éditeur de code';
 
   @override
-  String get onboardingEditFeatureSyntax => 'Syntax highlighting';
+  String get onboardingEditFeatureSyntax => 'Coloration syntaxique';
 
   @override
-  String get onboardingEditFeatureAutosave => 'Auto-saving';
+  String get onboardingEditFeatureAutosave => 'Sauvegarde automatique';
 
   @override
-  String get onboardingEditFeatureExperimental => 'Experimental feature';
+  String get onboardingEditFeatureExperimental => 'Fonctionnalité expérimentale';
 
   @override
-  String get onboardingNotificationDescription => 'Notifications keep you informed about:';
+  String get onboardingNotificationDescription => 'Les notifications vous informent de :';
 
   @override
-  String get onboardingNotificationFeatureSync => 'Sync status updates';
+  String get onboardingNotificationFeatureSync => 'Mises à jour du statut de synchro';
 
   @override
-  String get onboardingNotificationFeatureConflict => 'Merge conflict alerts';
+  String get onboardingNotificationFeatureConflict => 'Alertes de conflit de fusion';
 
   @override
-  String get onboardingNotificationFeatureBug => 'Bug report notifications';
+  String get onboardingNotificationFeatureBug => 'Signalements de bugs';
 
   @override
-  String get onboardingNotificationDefault => 'All notifications are off by default.';
+  String get onboardingNotificationDefault => 'Toutes les notifications sont désactivées par défaut.';
 
   @override
-  String get onboardingFileAccessDescription => 'File access is required for:';
+  String get onboardingFileAccessDescription => 'L\'accès aux fichiers est nécessaire pour :';
 
   @override
-  String get onboardingFileAccessFeatureSync => 'Syncing your repository';
+  String get onboardingFileAccessFeatureSync => 'Synchroniser votre dépôt';
 
   @override
-  String get onboardingFileAccessFeatureReadWrite => 'Reading and writing files';
+  String get onboardingFileAccessFeatureReadWrite => 'Lire et écrire des fichiers';
 
   @override
-  String get onboardingFileAccessFeatureDirectory => 'Accessing your selected directory';
+  String get onboardingFileAccessFeatureDirectory => 'Accéder à votre dossier sélectionné';
 
   @override
-  String get onboardingPremiumFeatures => 'Premium Features';
+  String get onboardingPremiumFeatures => 'Fonctionnalités Premium';
 
   @override
-  String get onboardingWelcomeTitle => 'Effortless File Syncing';
+  String get onboardingWelcomeTitle => 'Synchronisation sans effort';
 
   @override
-  String get onboardingWelcomeDescWorks => 'Works\n';
+  String get onboardingWelcomeDescWorks => 'Fonctionne\n';
 
   @override
-  String get onboardingWelcomeDescBackground => 'in the background,\n';
+  String get onboardingWelcomeDescBackground => 'en arrière-plan,\n';
 
   @override
-  String get onboardingWelcomeDescYourWork => 'your work\n';
+  String get onboardingWelcomeDescYourWork => 'votre travail\n';
 
   @override
-  String get onboardingWelcomeDescFocus => 'always in focus';
+  String get onboardingWelcomeDescFocus => 'toujours au premier plan';
 
   @override
-  String get onboardingChooseYourFocus => 'Choose your focus';
+  String get onboardingChooseYourFocus => 'Choisissez votre objectif';
 
   @override
-  String get onboardingChangeLaterInSettings => 'You can change this later in settings';
+  String get onboardingChangeLaterInSettings => 'Vous pourrez modifier cela plus tard dans les paramètres';
 
   @override
-  String get onboardingBrowseEditTitle => 'Browse & Edit';
+  String get onboardingBrowseEditTitle => 'Parcourir et éditer';
 
   @override
-  String get onboardingBrowseEditSubtitle => 'Built-in tools for your files';
+  String get onboardingBrowseEditSubtitle => 'Outils intégrés pour vos fichiers';
 
   @override
-  String get onboardingAlmostThereTitle => 'Almost there!';
+  String get onboardingAlmostThereTitle => 'Plus qu\'un pas !';
 
   @override
-  String get onboardingAlmostThereSubtitle => 'Here\'s what\'s next:';
+  String get onboardingAlmostThereSubtitle => 'Voici la suite :';
 
   @override
-  String get onboardingStepAuthenticate => 'Authenticate with your Git provider';
+  String get onboardingStepAuthenticate => 'Authentifiez-vous avec votre fournisseur Git';
 
   @override
-  String get onboardingStepClone => 'Clone a repository to your device';
+  String get onboardingStepClone => 'Clonez un dépôt sur votre appareil';
 
   @override
-  String get onboardingStepSyncSettings => 'Configure your sync settings';
+  String get onboardingStepSyncSettings => 'Configurez vos paramètres de synchronisation';
 
   @override
-  String get onboardingStepWiki => 'Check the wiki if you need help';
+  String get onboardingStepWiki => 'Consultez le wiki si besoin d\'aide';
 
   @override
-  String get onboardingStepAllSet => 'Then you\'ll be all set!';
+  String get onboardingStepAllSet => 'Et vous serez fin prêt !';
 
   @override
-  String get onboardingAuthTitle => 'Authenticate';
+  String get onboardingAuthTitle => 'Authentification';
 
   @override
-  String get onboardingAuthSubtitle => 'Authenticate with your preferred git provider';
+  String get onboardingAuthSubtitle => 'Authentifiez-vous avec votre fournisseur git';
 
   @override
-  String get onboardingLaunchWiki => 'Launch the wiki';
+  String get onboardingLaunchWiki => 'Lancer le wiki';
 
   @override
-  String get currentBranch => 'Current Branch';
+  String get onboardingHowYouFoundUsTitle => 'Comment avez-vous découvert GitSync ?';
+
+  @override
+  String get onboardingHowYouFoundUsSubtitle => 'Aidez-nous à comprendre d\'où viennent nos utilisateurs (sélectionnez tout ce qui s\'applique)';
+
+  @override
+  String get sourceReddit => 'Reddit';
+
+  @override
+  String get sourceYoutube => 'YouTube';
+
+  @override
+  String get sourceDiscord => 'Discord';
+
+  @override
+  String get sourceMedium => 'Medium';
+
+  @override
+  String get sourceGoogle => 'Google Search';
+
+  @override
+  String get sourceGithubFdroid => 'GitHub / F-Droid';
+
+  @override
+  String get sourceStore => 'Play Store / App Store';
+
+  @override
+  String get sourceWordOfMouth => 'Bouche-à-oreille';
+
+  @override
+  String get sourceAdvertisements => 'Publicités';
+
+  @override
+  String get sourceObsidian => 'Plugin Git Obsidian';
+
+  @override
+  String get sourceAiSearch => 'Recherche IA (ChatGPT, Claude, Grok)';
+
+  @override
+  String get sourceOther => 'Autre';
+
+  @override
+  String get sourceOtherHint => 'Dites-nous où';
+
+  @override
+  String get currentBranch => 'Branche actuelle';
 
   @override
   String get detachedHead => 'Tête détachée';
 
   @override
-  String get unbornBranch => 'Unborn Branch';
+  String get unbornBranch => 'Branche à naître';
 
   @override
   String get commitsNotFound => 'Aucun commit trouvé…';
 
   @override
-  String get repoNotFound => 'Aucun commit trouvé…';
+  String get repoNotFound => 'Aucun dépôt trouvé…';
 
   @override
   String get committed => 'validé';
@@ -791,19 +833,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deletions => '%s --';
 
   @override
-  String get modifyRemoteUrl => 'Modify Remote URL';
+  String get modifyRemoteUrl => 'Modifier l\'URL distante';
 
   @override
-  String get modify => 'Modify';
+  String get modify => 'Modifier';
 
   @override
-  String get remoteUrl => 'Remote URL';
+  String get remoteUrl => 'URL du dépôt distant';
 
   @override
-  String get setRemoteUrl => 'Set Remote URL';
+  String get setRemoteUrl => 'Définir l\'URL distante';
 
   @override
-  String get launchInBrowser => 'Launch in Browser';
+  String get launchInBrowser => 'Ouvrir dans le navigateur';
 
   @override
   String get auth => 'AUTH';
@@ -815,13 +857,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get syncSettings => 'Paramètres de sync';
 
   @override
-  String get enableApplicationObserver => 'App Sync Settings';
+  String get enableApplicationObserver => 'Paramètres de synchronisation de l\'appli';
 
   @override
-  String get appSyncDescription => 'Automatically syncs when your selected app is opened or closed';
+  String get appSyncDescription => 'Synchronisation automatique quand l\'app sélectionnée est ouverte ou fermée';
 
   @override
-  String get appSyncIosDescription => 'Automatically syncs when GitSync is opened or closed';
+  String get appSyncIosDescription => 'Synchronisation automatique quand GitSync est ouvert ou fermé';
 
   @override
   String get iosAppSyncDocsLinkText => 'Synchroniser lors de l\'ouverture/fermeture d\'autres applications';
@@ -837,10 +879,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get search => 'Rechercher';
 
   @override
-  String get searchEllipsis => 'Search…';
+  String get searchEllipsis => 'Rechercher…';
 
   @override
-  String get applicationNotSet => 'Sélectionner les applications';
+  String get applicationNotSet => 'Choisir app(s)';
 
   @override
   String get selectApplication => 'Sélectionner l\'application(s)';
@@ -867,22 +909,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get scheduledSyncSettings => 'Paramètres de sync planifiée';
 
   @override
-  String get scheduledSyncDescription => 'Automatically syncs periodically in the background';
+  String get scheduledSyncDescription => 'Synchronise automatiquement en arrière-plan';
 
   @override
-  String get sync => 'Synchroniser';
+  String get tabHome => 'Accueil';
 
   @override
   String get iosDefaultSyncRate => 'quand iOS le permet';
 
   @override
-  String get every => 'every';
+  String get every => 'tous les';
 
   @override
-  String get scheduledSync => 'Scheduled Sync';
+  String get scheduledSync => 'Synchro planifiée';
 
   @override
-  String get custom => 'Custom';
+  String get custom => 'Personnalisé';
 
   @override
   String get interval15min => '15 min';
@@ -891,40 +933,40 @@ class AppLocalizationsFr extends AppLocalizations {
   String get interval30min => '30 min';
 
   @override
-  String get interval1hour => '1 hour';
+  String get interval1hour => '1 h';
 
   @override
-  String get interval6hours => '6 hours';
+  String get interval6hours => '6 h';
 
   @override
-  String get interval12hours => '12 hours';
+  String get interval12hours => '12 h';
 
   @override
-  String get interval1day => '1 day';
+  String get interval1day => '1 jour';
 
   @override
-  String get interval1week => '1 week';
+  String get interval1week => '1 semaine';
 
   @override
   String get minutes => 'minute(s)';
 
   @override
-  String get hours => 'hour(s)';
+  String get hours => 'heure(s)';
 
   @override
-  String get days => 'day(s)';
+  String get days => 'jour(s)';
 
   @override
-  String get weeks => 'week(s)';
+  String get weeks => 'semaine(s)';
 
   @override
   String get enhancedScheduledSync => 'Synchronisation planifiée améliorée';
 
   @override
-  String get quickSyncSettings => 'Quick Sync Settings';
+  String get quickSyncSettings => 'Paramètres de synchro rapide';
 
   @override
-  String get quickSyncDescription => 'Sync using customizable quick tiles, shortcuts, or widgets';
+  String get quickSyncDescription => 'Synchroniser via des vignettes, raccourcis ou widgets personnalisables';
 
   @override
   String get otherSyncSettings => 'Autres paramètres de sync';
@@ -936,16 +978,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get useForTileManualSync => 'Utiliser pour la synchronisation manuelle de vignette';
 
   @override
-  String get useForShortcutSync => 'Use for Sync Shortcut';
+  String get useForShortcutSync => 'Utiliser pour le raccourci de synchro';
 
   @override
-  String get useForShortcutManualSync => 'Use for Manual Sync Shortcut';
+  String get useForShortcutManualSync => 'Utiliser pour le raccourci de synchro manuelle';
 
   @override
-  String get useForWidgetSync => 'Use for Sync Widget';
+  String get useForWidgetSync => 'Utiliser pour le widget de synchro';
 
   @override
-  String get useForWidgetManualSync => 'Use for Manual Sync Widget';
+  String get useForWidgetManualSync => 'Utiliser pour le widget de synchro manuelle';
+
+  @override
+  String get remoteAuthMismatchTitle => 'L\'authentification ne fonctionnera pas avec ce dépôt distant';
+
+  @override
+  String get remoteAuthMismatchUsesSsh => 'Ce dépôt distant utilise SSH — tapez pour changer';
+
+  @override
+  String get remoteAuthMismatchUsesHttps => 'Ce dépôt distant utilise HTTPS ou OAuth — tapez pour changer';
 
   @override
   String get selectYourGitProviderAndAuthenticate => 'Sélectionnez votre fournisseur Git et authentifiez-vous';
@@ -960,28 +1011,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String get oauthNoAffiliation => 'Authentification via des tiers ;\naucune affiliation ou approbation implicite.';
 
   @override
-  String get replacesExistingAuth => 'Replaces existing\ncontainer auth';
+  String get replacesExistingAuth => 'Remplace l\'authentification\nexistante du conteneur';
 
   @override
-  String get oauth => 'oauth';
+  String get oauth => 'OAuth';
 
   @override
-  String get copyFromContainer => 'Copy from Container';
+  String get copyFromContainer => 'Copier du conteneur';
 
   @override
-  String get or => 'or';
+  String get or => 'ou';
 
   @override
-  String get enterPAT => 'Enter Personal Access Token';
+  String get enterPAT => 'Saisir un Personal Access Token';
 
   @override
-  String get usePAT => 'Use PAT';
+  String get usePAT => 'Utiliser PAT';
 
   @override
-  String get oauthAllRepos => 'OAuth (All Repos)';
+  String get oauthAllRepos => 'OAuth (Tous les dépôts)';
 
   @override
-  String get oauthScoped => 'OAuth (Scoped)';
+  String get oauthScoped => 'OAuth (Limité)';
 
   @override
   String get ensureTokenScope => 'Assurez-vous que votre jeton inclut la portée \"repo\" pour une fonctionnalité complète.';
@@ -1055,19 +1106,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get clone => 'cloner';
 
   @override
-  String get chooseHowToClone => 'Choose how you want to clone the repository:';
+  String get chooseHowToClone => 'Choisissez comment cloner le dépôt :';
 
   @override
-  String get directCloningMsg => 'Direct Cloning: Clones the repository into the selected folder';
+  String get directCloningMsg => 'Clonage direct : Clone le dépôt dans le dossier sélectionné';
 
   @override
-  String get nestedCloningMsg => 'Nested Cloning: Creates a new folder named after the repository within the selected folder';
+  String get nestedCloningMsg => 'Clonage imbriqué : Crée un dossier nommé d\'après le dépôt dans le dossier sélectionné';
 
   @override
-  String get directClone => 'Direct Clone';
+  String get directClone => 'Clone direct';
 
   @override
-  String get nestedClone => 'Nested Clone';
+  String get nestedClone => 'Clone imbriqué';
 
   @override
   String get gitRepoUrlHint => 'https://git.abc/xyz.git';
@@ -1109,23 +1160,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get confirmCloneOverwriteAction => 'Écraser';
 
   @override
-  String get repoSearchLimits => 'Repository Search Limits';
+  String get repoSearchLimits => 'Limites de recherche';
 
   @override
   String get repoSearchLimitsDescription =>
-      'Repository search only examines the first 100 repositories returned by the API, so it may sometimes omit the repository you expect. \n\nIf the repository you want does not appear in search results, please clone it directly using its HTTPS or SSH URL.';
+      'La recherche examine uniquement les 100 premiers dépôts. Si le dépôt attendu n\'apparaît pas, clonez-le directement via son URL HTTPS ou SSH.';
 
   @override
-  String get advancedOptions => 'Advanced Options';
+  String get advancedOptions => 'Options avancées';
 
   @override
-  String get shallowClone => 'Shallow Clone (Depth)';
+  String get shallowClone => 'Clone superficiel (Profondeur)';
 
   @override
-  String get bareClone => 'Bare Clone';
+  String get bareClone => 'Clone nu';
 
   @override
-  String get cloneDepthPlaceholder => 'full';
+  String get cloneDepthPlaceholder => 'complet';
 
   @override
   String get repositorySettings => 'Paramètres du dépôt';
@@ -1149,10 +1200,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get useSshKey => 'Utiliser la clé AUTH pour la signature des commits';
 
   @override
-  String get syncMessageLabel => 'Message de synchronisation';
+  String get syncMessageLabel => 'Message de sync';
 
   @override
-  String get defaultSyncMessageLabel => 'Default Sync Message';
+  String get defaultSyncMessageLabel => 'Message de synchronisation par défaut';
 
   @override
   String get syncMessageDescription => 'utiliser %s pour la date et l\'heure';
@@ -1161,7 +1212,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get syncMessageTimeFormatLabel => 'Format de l\'heure du message de synchronisation';
 
   @override
-  String get defaultSyncMessageTimeFormatLabel => 'Default Sync Message Time Format';
+  String get defaultSyncMessageTimeFormatLabel => 'Format horaire du message de synchronisation';
 
   @override
   String get syncMessageTimeFormatDescription => 'utilise la syntaxe standard de formatage de date et d\'heure';
@@ -1176,10 +1227,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authorNameLabel => 'nom de l\'auteur';
 
   @override
-  String get defaultAuthorNameLabel => 'default author name';
+  String get defaultAuthorNameLabel => 'nom d\'auteur par défaut';
 
   @override
-  String get authorNameDescription => 'used to identify you in commit history';
+  String get authorNameDescription => 'utilisé pour vous identifier dans l\'historique des validations';
 
   @override
   String get authorName => 'JeanDupont12';
@@ -1188,23 +1239,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authorEmailLabel => 'e-mail de l\'auteur';
 
   @override
-  String get defaultAuthorEmailLabel => 'default author email';
+  String get defaultAuthorEmailLabel => 'email d\'auteur par défaut';
 
   @override
-  String get authorEmailDescription => 'attached to your commits for attribution';
+  String get authorEmailDescription => 'attaché à vos validations pour l\'attribution';
 
   @override
   String get authorEmail => 'jean12@dupont.com';
 
   @override
-  String get postFooterLabel => 'post footer';
+  String get postFooterLabel => 'pied de page';
 
   @override
-  String get postFooterDescription => 'appended to issues, comments, and pull requests you create';
+  String get postFooterDescription => 'ajouté aux issues, commentaires et pull requests que vous créez';
 
   @override
   String get postFooterDialogInfo =>
-      'This text is automatically appended to the end of issues, comments, and pull requests you create. You can change or remove it in your repository settings.\n\nThe default for new repositories can be set in Global Settings under Repository Defaults.';
+      'Ce texte est automatiquement ajouté à la fin des issues, commentaires et pull requests que vous créez. Vous pouvez le modifier ou le supprimer dans les paramètres de votre dépôt.\n\nLa valeur par défaut des nouveaux dépôts peut être définie dans les paramètres globaux, sous Valeurs par défaut des dépôts.';
 
   @override
   String get gitIgnore => '.gitignore';
@@ -1228,7 +1279,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get disableSsl => 'Désactiver le SSL';
 
   @override
-  String get disableSslDescription => 'Disable secure connection for HTTP repositories';
+  String get disableSslDescription => 'Désactiver la connexion sécurisée pour les dépôts HTTP';
 
   @override
   String get disableSslPromptTitle => 'Désactiver le SSL ?';
@@ -1238,10 +1289,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'L\'adresse que vous avez clonée commence par \"http\" (non sécurisé). La désactivation du SSL correspondra à l\'URL mais réduira la sécurité.';
 
   @override
-  String get optimisedSync => 'Optimised Sync';
+  String get optimisedSync => 'Synchro optimisée';
 
   @override
-  String get optimisedSyncDescription => 'Intelligently reduce overall sync operations';
+  String get optimisedSyncDescription => 'Réduire intelligemment les opérations de synchronisation';
 
   @override
   String get proceedAnyway => 'Continuer quand même ?';
@@ -1250,19 +1301,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get moreOptions => 'Plus d\'options';
 
   @override
-  String get untrackAll => 'Untrack All';
+  String get untrackAll => 'Tout désindexer';
 
   @override
   String get globalSettings => 'Paramètres globaux';
 
   @override
-  String get darkMode => 'Dark\nMode';
+  String get darkMode => 'Mode\nsombre';
 
   @override
-  String get lightMode => 'Light\nMode';
+  String get lightMode => 'Mode\nclair';
 
   @override
-  String get system => 'System';
+  String get system => 'Système';
 
   @override
   String get language => 'Langue';
@@ -1271,19 +1322,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get browseEditDir => 'Parcourir & Modifier le répertoire';
 
   @override
-  String get enableLineWrap => 'Enable Line Wrap in Editors';
+  String get enableLineWrap => 'Activer le retour à la ligne dans les éditeurs';
 
   @override
-  String get excludeFromRecents => 'Exclude From Recents';
+  String get excludeFromRecents => 'Exclure des récents';
 
   @override
   String get backupRestoreTitle => 'Récupération de configuration chiffrée';
 
   @override
-  String get encryptedBackup => 'Encrypted Backup';
+  String get encryptedBackup => 'Sauvegarde chiffrée';
 
   @override
-  String get encryptedRestore => 'Encrypted Restore';
+  String get encryptedRestore => 'Restauration chiffrée';
 
   @override
   String get backup => 'Sauvegarde';
@@ -1298,7 +1349,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get backupFileTemplate => 'backup_%s.gsbak';
 
   @override
-  String get enterPassword => 'Entrez le mot de passe';
+  String get enterPassword => 'Entrez le mot de passe %s';
 
   @override
   String get invalidPassword => 'Mot de passe invalide';
@@ -1325,7 +1376,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get improveTranslations => 'Améliorer les traductions';
 
   @override
-  String get joinTheDiscussion => 'Rejoindre la discussion Discord';
+  String get joinTheDiscussion => 'Rejoindre le Discord';
 
   @override
   String get noLogFilesFound => 'Aucun fichier journal trouvé !';
@@ -1337,7 +1388,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get uiGuide => 'Guide de l\'interface utilisateur';
 
   @override
-  String get viewPrivacyPolicy => 'Politique de confidentialité';
+  String get viewPrivacyPolicy => 'Confidentialité';
 
   @override
   String get viewEula => 'Conditions d\'utilisation (CLUF)';
@@ -1352,13 +1403,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get logsEmailRecipient => 'bugsviscouspotential@gmail.com';
 
   @override
-  String get repositoryDefaults => 'Repository Defaults';
+  String get repositoryDefaults => 'Valeurs par défaut du dépôt';
 
   @override
-  String get miscellaneous => 'Miscellaneous';
+  String get miscellaneous => 'Divers';
 
   @override
-  String get dangerZone => 'Danger Zone';
+  String get dangerZone => 'Zone dangereuse';
 
   @override
   String get file => 'Fichier';
@@ -1400,13 +1451,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get readOnly => 'Lecture seule';
 
   @override
-  String get cut => 'Cut';
+  String get cut => 'Couper';
 
   @override
-  String get copy => 'Copy';
+  String get copy => 'Copier';
 
   @override
-  String get paste => 'Paste';
+  String get paste => 'Coller';
 
   @override
   String get experimental => 'Expérimental';
@@ -1415,74 +1466,80 @@ class AppLocalizationsFr extends AppLocalizations {
   String get experimentalMsg => 'Utilisez à vos risques et périls';
 
   @override
-  String get codeEditorLimits => 'Code Editor Limits';
+  String get codeEditorLimits => 'Limites de l\'éditeur';
 
   @override
   String get codeEditorLimitsDescription =>
-      'The code editor provides basic, functional editing but hasn’t been exhaustively tested for edge cases or heavy use. \n\nIf you encounter bugs or want to suggest features, I welcome feedback! Please use the Bug Report or Feature Request options in Global Settings or below.';
+      'L\'éditeur offre une édition basique. Si vous rencontrez des bugs, merci de signaler via les options de signalement.';
 
   @override
-  String get openFile => 'Open File';
+  String get openFile => 'Ouvrir le fichier';
 
   @override
-  String get openFileDescription => 'Preview/edit file contents';
+  String get openFileDescription => 'Prévisualiser/éditer le contenu';
 
   @override
-  String get viewGitLog => 'view git log';
+  String get viewGitLog => 'voir le journal git';
 
   @override
-  String get viewGitLogDescription => 'View the full git log history';
+  String get viewGitLogDescription => 'Voir l\'historique complet du journal git';
 
   @override
-  String get ignoreUntrack => '.gitignore + Untrack';
+  String get openInTextastic => 'Open in Textastic';
 
   @override
-  String get ignoreUntrackDescription => 'Add files to .gitignore and untrack';
+  String get openInTextasticDescription => 'Open file in Textastic app';
 
   @override
-  String get excludeUntrack => '.git/info/exclude + Untrack';
+  String get ignoreUntrack => '.gitignore + Désindexer';
 
   @override
-  String get excludeUntrackDescription => 'Add files to the local exclude file and untrack';
+  String get ignoreUntrackDescription => 'Ajouter au .gitignore et désindexer';
 
   @override
-  String get ignoreOnly => 'Add to .gitignore Only';
+  String get excludeUntrack => '.git/info/exclude + Désindexer';
 
   @override
-  String get ignoreOnlyDescription => 'Only add files to .gitignore';
+  String get excludeUntrackDescription => 'Ajouter au fichier d\'exclusion local et désindexer';
 
   @override
-  String get excludeOnly => 'Add to .git/info/exclude Only';
+  String get ignoreOnly => 'Ajouter seulement à .gitignore';
 
   @override
-  String get excludeOnlyDescription => 'Only add files to the local exclude file';
+  String get ignoreOnlyDescription => 'Ajouter uniquement au .gitignore';
 
   @override
-  String get untrack => 'Untrack file(s)';
+  String get excludeOnly => 'Ajouter seulement à .git/info/exclude';
 
   @override
-  String get untrackDescription => 'Untrack specified file(s)';
+  String get excludeOnlyDescription => 'Ajouter uniquement au fichier d\'exclusion local';
 
   @override
-  String get selected => 'selected';
+  String get untrack => 'Désindexer le(s) fichier(s)';
 
   @override
-  String get ignoreAndUntrack => 'Ignore & Untrack';
+  String get untrackDescription => 'Désindexer le(s) fichier(s) spécifié(s)';
 
   @override
-  String get open => 'Open';
+  String get selected => 'sélectionné';
 
   @override
-  String get fileDiff => 'File Diff';
+  String get ignoreAndUntrack => 'Ignorer et désindexer';
 
   @override
-  String get openEditFile => 'Open/Edit File';
+  String get open => 'Ouvrir';
 
   @override
-  String get filesChanged => 'file(s) changed';
+  String get fileDiff => 'Diff du fichier';
 
   @override
-  String get commits => 'commits';
+  String get openEditFile => 'Ouvrir/Éditer le fichier';
+
+  @override
+  String get filesChanged => 'fichier(s) modifié(s)';
+
+  @override
+  String get commits => 'validations';
 
   @override
   String get defaultContainerName => 'alias';
@@ -1528,25 +1585,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get submodulesFoundAction => 'Ajouter les sous-modules';
 
   @override
-  String get addRemote => 'Add Remote';
+  String get addRemote => 'Ajouter un dépôt distant';
 
   @override
-  String get deleteRemote => 'Delete Remote';
+  String get deleteRemote => 'Supprimer le dépôt distant';
 
   @override
-  String get renameRemote => 'Rename Remote';
+  String get renameRemote => 'Renommer le dépôt distant';
 
   @override
-  String get remoteName => 'Remote Name';
+  String get remoteName => 'Nom du dépôt distant';
 
   @override
-  String get confirmDeleteRemote => 'Are you sure you want to delete the remote \"%s\"?';
+  String get confirmDeleteRemote => 'Voulez-vous vraiment supprimer le dépôt distant « %s » ?';
 
   @override
-  String get orEnterManually => 'or enter manually';
+  String get orEnterManually => 'ou saisir manuellement';
 
   @override
-  String get createOnProvider => 'Create on %s';
+  String get createOnProvider => 'Créer sur %s';
 
   @override
   String get confirmBranchCheckoutTitle => 'Changer de branche ?';
@@ -1576,314 +1633,316 @@ class AppLocalizationsFr extends AppLocalizations {
   String get createBranchBasedOn => 'Basé sur';
 
   @override
-  String get renameBranch => 'Rename Branch';
+  String get renameBranch => 'Renommer la branche';
 
   @override
-  String get deleteBranch => 'Delete Branch?';
+  String get deleteBranch => 'Supprimer la branche ?';
 
   @override
-  String get confirmDeleteBranchMsg => 'Are you sure you want to delete the branch \"%s\"?';
+  String get confirmDeleteBranchMsg => 'Voulez-vous vraiment supprimer la branche « %s » ?';
 
   @override
-  String get menuAmendCommit => 'Amend Commit';
+  String get menuAmendCommit => 'Amender la validation';
 
   @override
-  String get menuAmendCommitDesc => 'Modify the most recent commit message or contents';
+  String get menuAmendCommitDesc => 'Modifier le message ou le contenu de la dernière validation';
 
   @override
-  String get menuUndoCommit => 'Undo Commit';
+  String get menuUndoCommit => 'Annuler la validation';
 
   @override
-  String get menuUndoCommitDesc => 'Undo this commit but keep the changes staged';
+  String get menuUndoCommitDesc => 'Annuler cette validation mais garder les modifications indexées';
 
   @override
-  String get menuResetToCommit => 'Reset to Commit';
+  String get menuResetToCommit => 'Réinitialiser à la validation';
 
   @override
-  String get menuResetToCommitDesc => 'Discard all commits after this one';
+  String get menuResetToCommitDesc => 'Supprimer toutes les validations après celle-ci';
 
   @override
-  String get menuCheckoutCommit => 'Checkout Commit';
+  String get menuCheckoutCommit => 'Extraire la validation';
 
   @override
-  String get menuCheckoutCommitDesc => 'Check out this commit (detached HEAD)';
+  String get menuCheckoutCommitDesc => 'Extraire cette validation (HEAD détaché)';
 
   @override
-  String get menuRevertCommit => 'Revert Commit Changes';
+  String get menuRevertCommit => 'Revert les modifications';
 
   @override
-  String get menuRevertCommitDesc => 'Create a new commit that undoes these changes';
+  String get menuRevertCommitDesc => 'Créer une nouvelle validation qui annule ces modifications';
 
   @override
-  String get menuCreateBranch => 'Create Branch from Commit';
+  String get menuCreateBranch => 'Créer une branche';
 
   @override
-  String get menuCreateBranchDesc => 'Create a new branch from this commit';
+  String get menuCreateBranchDesc => 'Créer une nouvelle branche à partir de cette validation';
 
   @override
-  String get menuCreateTag => 'Create Tag';
+  String get menuCreateTag => 'Créer une étiquette';
 
   @override
-  String get menuCreateTagDesc => 'Create a tag on this commit';
+  String get menuCreateTagDesc => 'Créer une étiquette sur cette validation';
 
   @override
-  String get menuCherryPick => 'Cherry Pick Commit';
+  String get menuCherryPick => 'Cherry Pick la validation';
 
   @override
-  String get menuCherryPickDesc => 'Apply this commit onto the current branch';
+  String get menuCherryPickDesc => 'Appliquer cette validation sur la branche courante';
 
   @override
-  String get menuSelectCommits => 'Select Commits';
+  String get menuSelectCommits => 'Sélectionner des validations';
 
   @override
-  String get menuSelectCommitsDesc => 'Select multiple commits for batch operations';
+  String get menuSelectCommitsDesc => 'Sélectionner plusieurs validations pour des opérations par lots';
 
   @override
-  String get menuCopySha => 'Copy SHA';
+  String get menuCopySha => 'Copier SHA';
 
   @override
-  String get menuCopyShaDesc => 'Copy the full commit hash to clipboard';
+  String get menuCopyShaDesc => 'Copier le hash complet de la validation dans le presse-papiers';
 
   @override
-  String get menuCopyTag => 'Copy Tag';
+  String get menuCopyTag => 'Copier l\'étiquette';
 
   @override
-  String get menuCopyTagDesc => 'Copy the tag name to clipboard';
+  String get menuCopyTagDesc => 'Copier le nom de l\'étiquette dans le presse-papiers';
 
   @override
-  String get menuViewOnProvider => 'View on %s';
+  String get menuViewOnProvider => 'Voir sur %s';
 
   @override
-  String get menuViewOnProviderDesc => 'Open this commit in your browser';
+  String get menuViewOnProviderDesc => 'Ouvrir cette validation dans votre navigateur';
 
   @override
-  String get createBranchFromCommit => 'Create Branch from Commit';
+  String get createBranchFromCommit => 'Créer une branche depuis la validation';
 
   @override
-  String get createBranchFromCommitMsg => 'Create a new branch starting at commit %s.';
+  String get createBranchFromCommitMsg => 'Créer une nouvelle branche à partir de la validation %s.';
 
   @override
-  String get checkoutCommit => 'Checkout Commit';
+  String get checkoutCommit => 'Extraire la validation';
 
   @override
-  String get checkoutCommitMsg => 'This will put you in a detached HEAD state at commit';
+  String get checkoutCommitMsg => 'Cela vous placera dans un état HEAD détaché à la validation';
 
   @override
-  String get checkoutCommitDetachedWarning => 'You will not be on any branch. Create a new branch to keep your changes.';
+  String get checkoutCommitDetachedWarning => 'Vous ne serez sur aucune branche. Créez une nouvelle branche pour conserver vos modifications.';
 
   @override
-  String get createTagOnCommit => 'Create Tag';
+  String get createTagOnCommit => 'Créer une étiquette';
 
   @override
-  String get createTagOnCommitMsg => 'Create a tag on commit %s.';
+  String get createTagOnCommitMsg => 'Créer une étiquette sur la validation %s.';
 
   @override
-  String get tagName => 'Tag Name';
+  String get tagName => 'Nom de l\'étiquette';
 
   @override
-  String get revertCommit => 'Revert Commit';
+  String get revertCommit => 'Revert la validation';
 
   @override
-  String get revertCommitMsg => 'Revert the changes introduced by commit';
+  String get revertCommitMsg => 'Revert les modifications introduites par la validation';
 
   @override
-  String get revertCommitWarning => 'This will create a new commit that undoes the changes.';
+  String get revertCommitWarning => 'Cela créera une nouvelle validation qui annule les modifications.';
 
   @override
   String get revert => 'Revert';
 
   @override
-  String get amendCommit => 'Amend Commit';
+  String get amendCommit => 'Amender la validation';
 
   @override
-  String get amendCommitMsg => 'Edit the message for commit';
+  String get amendCommitMsg => 'Modifier le message de la validation';
 
   @override
-  String get amendCommitWarning => 'This will rewrite the commit. A force push may be required if this commit has already been pushed.';
+  String get amendCommitWarning => 'Cela réécrira la validation. Un push forcé peut être nécessaire si cette validation a déjà été poussée.';
 
   @override
-  String get amend => 'Amend';
+  String get amend => 'Amender';
 
   @override
-  String get undoCommit => 'Undo Commit';
+  String get undoCommit => 'Annuler la validation';
 
   @override
-  String get undoCommitMsg => 'Undo commit';
+  String get undoCommitMsg => 'Annuler la validation';
 
   @override
-  String get undoCommitWarning => 'The commit will be removed but your changes will remain staged.';
+  String get undoCommitWarning => 'La validation sera supprimée mais vos modifications resteront indexées.';
 
   @override
-  String get undo => 'Undo';
+  String get undo => 'Annuler';
 
   @override
-  String get resetToCommit => 'Reset to Commit';
+  String get resetToCommit => 'Réinitialiser à la validation';
 
   @override
-  String get resetToCommitMsg => 'Reset to commit';
+  String get resetToCommitMsg => 'Réinitialiser à la validation';
 
   @override
   String get resetToCommitWarning =>
-      'All commits after this one will be permanently lost and working directory changes will be discarded. This cannot be undone.';
+      'Toutes les validations après celle-ci seront définitivement perdues et les modifications du répertoire de travail seront supprimées. Cette action est irréversible.';
 
   @override
-  String get reset => 'Reset';
+  String get reset => 'Réinitialiser';
 
   @override
-  String get cherryPickCommit => 'Cherry Pick Commit';
+  String get cherryPickCommit => 'Cherry Pick la validation';
 
   @override
-  String get cherryPickCommitMsg => 'Apply the changes from commit';
+  String get cherryPickCommitMsg => 'Appliquer les modifications de la validation';
 
   @override
-  String get cherryPickCommitWarning => 'This may produce merge conflicts if the changes overlap with the target branch.';
+  String get cherryPickCommitWarning => 'Cela peut produire des conflits de fusion si les modifications chevauchent la branche cible.';
 
   @override
-  String get cherryPickTargetBranch => 'Target Branch';
+  String get cherryPickTargetBranch => 'Branche cible';
 
   @override
   String get cherryPick => 'Cherry Pick';
 
   @override
-  String get cherryPickCommits => 'Cherry Pick Commits';
+  String get cherryPickCommits => 'Cherry Pick des validations';
 
   @override
-  String get cherryPickCommitsMsg => 'Apply changes from %s commits onto';
+  String get cherryPickCommitsMsg => 'Appliquer les modifications de %s validations sur';
 
   @override
-  String get cherryPickCommitsWarning => 'Commits will be applied in chronological order. Conflicts may occur at each step.';
+  String get cherryPickCommitsWarning =>
+      'Les validations seront appliquées dans l\'ordre chronologique. Des conflits peuvent survenir à chaque étape.';
 
   @override
-  String get squashCommits => 'Squash Commits';
+  String get squashCommits => 'Squash des validations';
 
   @override
-  String get squashCommitsMsg => 'Combine %s commits into a single commit';
+  String get squashCommitsMsg => 'Combiner %s validations en une seule';
 
   @override
-  String get squashCommitsWarning => 'This rewrites commit history. If these commits have been pushed, a force push will be required.';
+  String get squashCommitsWarning =>
+      'Cela réécrit l\'historique des validations. Si ces validations ont déjà été poussées, un push forcé sera nécessaire.';
 
   @override
   String get squash => 'Squash';
 
   @override
-  String get squashCommitMessage => 'Squash Message';
+  String get squashCommitMessage => 'Message de squash';
 
   @override
-  String get selectCommits => 'Select Commits';
+  String get selectCommits => 'Sélectionner des validations';
 
   @override
-  String get selectedCount => '%s selected';
+  String get selectedCount => '%s sélectionné(s)';
 
   @override
-  String get squashRequiresConsecutive => 'Squash requires consecutive commits from the latest commit';
+  String get squashRequiresConsecutive => 'Le squash nécessite des validations consécutives à partir de la dernière validation';
 
   @override
   String get issues => 'Issues';
 
   @override
-  String get issueFilterOpen => 'Open';
+  String get issueFilterOpen => 'Ouvertes';
 
   @override
-  String get issueFilterClosed => 'Closed';
+  String get issueFilterClosed => 'Fermées';
 
   @override
-  String get issueFilterAll => 'All';
+  String get issueFilterAll => 'Toutes';
 
   @override
-  String get issuesNotFound => 'No issues found…';
+  String get issuesNotFound => 'Aucune issue trouvée…';
 
   @override
-  String get filterAuthor => 'Author';
+  String get filterAuthor => 'Auteur';
 
   @override
-  String get filterLabels => 'Labels';
+  String get filterLabels => 'Étiquettes';
 
   @override
-  String get filterAssignee => 'Assignee';
+  String get filterAssignee => 'Assigné';
 
   @override
-  String get filterMilestone => 'Milestone';
+  String get filterMilestone => 'Jalon';
 
   @override
-  String get filterProject => 'Project';
+  String get filterProject => 'Projet';
 
   @override
-  String get filterNone => 'None';
+  String get filterNone => 'Aucun';
 
   @override
-  String get filterMilestonesEmpty => 'No milestones found';
+  String get filterMilestonesEmpty => 'Aucun jalon trouvé';
 
   @override
-  String get filterProjectsEmpty => 'No projects found';
+  String get filterProjectsEmpty => 'Aucun projet trouvé';
 
   @override
-  String get sortNewest => 'Newest';
+  String get sortNewest => 'Plus récentes';
 
   @override
-  String get sortOldest => 'Oldest';
+  String get sortOldest => 'Plus anciennes';
 
   @override
-  String get sortMostCommented => 'Most commented';
+  String get sortMostCommented => 'Plus commentées';
 
   @override
-  String get sortRecentlyUpdated => 'Recently updated';
+  String get sortRecentlyUpdated => 'Récemment mises à jour';
 
   @override
-  String get filterSidebar => 'Filters';
+  String get filterSidebar => 'Filtres';
 
   @override
-  String get filterReviewer => 'Reviewer';
+  String get filterReviewer => 'Relecteur';
 
   @override
   String get pullRequests => 'Pull Requests';
 
   @override
-  String get pullRequestsNotFound => 'No pull requests found…';
+  String get pullRequestsNotFound => 'Aucune pull request trouvée…';
 
   @override
-  String get tags => 'Tags';
+  String get tags => 'Étiquettes';
 
   @override
-  String get tagsNotFound => 'No tags found…';
+  String get tagsNotFound => 'Aucune étiquette trouvée…';
 
   @override
   String get releases => 'Releases';
 
   @override
-  String get releasesNotFound => 'No releases found…';
+  String get releasesNotFound => 'Aucune release trouvée…';
 
   @override
-  String get preRelease => 'PRE-RELEASE';
+  String get preRelease => 'PRÉ-RELEASE';
 
   @override
-  String get draft => 'DRAFT';
+  String get draft => 'BROUILLON';
 
   @override
-  String get releaseAssets => 'Assets';
+  String get releaseAssets => 'Ressources';
 
   @override
-  String get noAssets => 'No assets';
+  String get noAssets => 'Aucune ressource';
 
   @override
   String get actions => 'Actions';
 
   @override
-  String get actionsNotFound => 'No actions found…';
+  String get actionsNotFound => 'Aucune action trouvée…';
 
   @override
-  String get actionFilterAll => 'All';
+  String get actionFilterAll => 'Toutes';
 
   @override
-  String get actionFilterSuccess => 'Success';
+  String get actionFilterSuccess => 'Succès';
 
   @override
-  String get actionFilterFailed => 'Failed';
+  String get actionFilterFailed => 'Échec';
 
   @override
-  String get attemptAutoFix => 'Tenter une correction automatique ?';
+  String get attemptAutoFix => 'Correction auto ?';
 
   @override
-  String get troubleshooting => 'Troubleshooting';
+  String get troubleshooting => 'Dépannage';
 
   @override
   String get youreOffline => 'Vous êtes hors ligne.';
@@ -1892,22 +1951,31 @@ class AppLocalizationsFr extends AppLocalizations {
   String get someFeaturesMayNotWork => 'Certaines fonctionnalités peuvent ne pas fonctionner.';
 
   @override
-  String get unsupportedGitAttributes => 'This repo uses git features only available in store versions.';
+  String get unsupportedGitAttributes => 'Ce dépôt utilise des filtres git, disponibles uniquement dans les versions boutique.';
 
   @override
-  String get tapToOpenPlayStore => 'Tap to update.';
+  String get tapToOpenPlayStore => 'Tapez pour mettre à jour.';
 
   @override
   String get ongoingMergeConflict => 'Conflit de fusion en cours';
 
   @override
-  String get networkStallRetry => 'Poor network — will retry shortly';
+  String get networkStallRetry => 'Connexion lente — nouvelle tentative';
 
   @override
   String get networkUnavailableRetry => 'Réseau indisponible !\nGitSync réessaiera lors de la reconnexion';
 
   @override
-  String get failedToResolveAddressMessage => 'Could not reach the server. Check your internet connection or verify the repository URL is correct.';
+  String get networkStallManual => 'Connexion lente — veuillez réessayer';
+
+  @override
+  String get networkUnavailableManual => 'Réseau indisponible — veuillez réessayer';
+
+  @override
+  String get networkRetryComplete => 'Opération en file d\'attente terminée';
+
+  @override
+  String get failedToResolveAddressMessage => 'Impossible d\'atteindre le serveur. Vérifiez votre connexion internet ou l\'URL du dépôt.';
 
   @override
   String get pullFailed => 'Échec du pull ! Veuillez vérifier les modifications non validées et réessayer.';
@@ -1936,25 +2004,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get androidLimitedFilepathCharacters =>
-      'This issue is due to Android file naming restrictions. Please rename the affected files on a different device and resync.\n\nUnsupported characters: \" * / : < > ? \\ |';
+      'Ce problème est dû aux restrictions de nommage Android. Veuillez renommer les fichiers concernés sur un autre appareil et resynchroniser.\n\nCaractères non supportés : \" * / : < > ? \\ |';
 
   @override
-  String get emptyNameOrEmail =>
-      'Your Git configuration is missing an author name or email address. Please update your settings to include your author name and email.';
+  String get emptyNameOrEmail => 'Votre configuration Git est incomplète : nom d\'auteur ou email manquant.';
 
   @override
-  String get errorReadingZlibStream =>
-      'This is a known issue with specific devices which can be fixed with the last legacy version of the app. Please download it for continued access, though some features may be limited';
+  String get errorReadingZlibStream => 'Un problème connu sur certains appareils, résolu avec la dernière version legacy de l\'application.';
 
   @override
-  String get gitObsidianFoundTitle => 'Obsidian Git Warning';
+  String get gitObsidianFoundTitle => 'Avertissement Obsidian Git';
 
   @override
   String get gitObsidianFoundMessage =>
-      'This repository seems to contain an Obsidian vault with the Obsidian Git plugin enabled.\n\nPlease disable the plugin on this device to avoid conflicts! More details on the process can be found in the linked documentation.';
+      'Ce dépôt semble contenir un coffre Obsidian avec le plugin Obsidian Git activé.\n\nVeuillez désactiver le plugin sur cet appareil pour éviter des conflits !';
 
   @override
-  String get gitObsidianFoundAction => 'View Documentation';
+  String get gitObsidianFoundAction => 'Voir la documentation';
 
   @override
   String get githubIssueOauthTitle => 'Connectez GitHub pour signaler automatiquement';
@@ -1964,7 +2030,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Vous devez connecter votre compte GitHub pour signaler les bugs et suivre leur progression.\nVous pouvez réinitialiser cette connexion à tout moment dans les paramètres globaux.';
 
   @override
-  String get includeLogs => 'Include Log File(s)';
+  String get includeLogs => 'Inclure le(s) fichier(s) journal';
 
   @override
   String get issueReportTitleTitle => 'Titre';
@@ -1985,11 +2051,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get issueReportMinimalReproDesc => 'Décrivez les étapes menant à l\'erreur';
 
   @override
-  String get includeLogFiles => 'Include Log File(s)';
+  String get includeLogFiles => 'Inclure le(s) fichier(s) journal';
 
   @override
   String get includeLogFilesDescription =>
-      'Including log files with your bug report is strongly recommended as they can greatly speed up diagnosing the root cause. \nIf you choose to disable \"Include log file(s)\", please copy and paste the relevant log excerpts into your report so we can reproduce the issue. You can review logs before sending by using the eye icon to confirm there’s nothing sensitive. \n\nIncluding logs is optional, not mandatory.';
+      'Inclure les fichiers journaux est vivement recommandé.\n\nSi vous désactivez cette option, veuillez copier les extraits pertinents dans votre rapport.\n\nL\'inclusion des journaux est facultative.';
 
   @override
   String get report => 'Signaler';
@@ -2005,274 +2071,332 @@ class AppLocalizationsFr extends AppLocalizations {
   String get trackIssue => 'Suivre le problème et répondre aux messages';
 
   @override
-  String get createNewRepository => 'Create New Repository';
+  String get issueDuplicateTitle => 'Already Reported';
 
   @override
-  String get noGitRepoFoundMsg => 'No git repository was found in the selected folder. Would you like to create a new one here?';
+  String get issueDuplicateMsg =>
+      'This bug has already been reported and is being tracked in an open issue. \n\nOpen the issue to follow progress, or send your report as a message there so it reaches us without creating a duplicate.';
 
   @override
-  String get remoteSetupLaterMsg => 'This creates a local repository.\nAuthenticate and add a remote to enable sync.';
+  String get viewIssue => 'View Issue';
 
   @override
-  String get localOnlyNoRemote => 'Local only — add a remote to sync';
+  String get sendMessage => 'Send As Message';
 
   @override
-  String get noRemoteConfigured => 'No remote configured';
+  String get issueCommentSuccessTitle => 'Message Sent';
 
   @override
-  String get createRemoteRepo => 'Create Remote Repository';
+  String get issueCommentSuccessMsg =>
+      'Your report has been added to the existing issue. Bookmark this page to track progress and respond to messages. \n\nIssues with no activity for 7 days are automatically closed.';
 
   @override
-  String get repoName => 'Repository Name';
+  String get issueCommentFailedMsg => 'Your message couldn’t be sent. Please check your connection and try again.';
+
+  @override
+  String get createNewRepository => 'Créer un nouveau dépôt';
+
+  @override
+  String get noGitRepoFoundMsg => 'Aucun dépôt git trouvé dans le dossier sélectionné. Voulez-vous en créer un nouveau ici ?';
+
+  @override
+  String get remoteSetupLaterMsg => 'Cela crée un dépôt local.\nAuthentifiez-vous et ajoutez un dépôt distant pour activer la synchronisation.';
+
+  @override
+  String get localOnlyNoRemote => 'Local uniquement — ajoutez un dépôt distant pour synchroniser';
+
+  @override
+  String get noRemoteConfigured => 'Aucun dépôt distant configuré';
+
+  @override
+  String get createRemoteRepo => 'Créer un dépôt distant';
+
+  @override
+  String get repoName => 'Nom du dépôt';
 
   @override
   String get repoPublic => 'Public';
 
   @override
-  String get repoPrivate => 'Private';
+  String get repoPrivate => 'Privé';
 
   @override
-  String get creatingRemoteRepo => 'Creating remote repository...';
+  String get creatingRemoteRepo => 'Création du dépôt distant…';
 
   @override
-  String get remoteRepoCreated => 'Remote repository created and linked as origin';
+  String get remoteRepoCreated => 'Dépôt distant créé et lié comme origin';
 
   @override
-  String get remoteRepoCreateFailed => 'Failed to create remote repository';
+  String get remoteRepoCreateFailed => 'Échec de la création du dépôt distant';
 
   @override
-  String get noRemoteDetectedMsg => 'This repository has no remote configured. Would you like to create one?';
+  String get noRemoteDetectedMsg => 'Ce dépôt n\'a pas de dépôt distant configuré. Souhaitez-vous en créer un ?';
 
   @override
-  String get createAndLinkRemote => 'Create & Link Remote';
+  String get createAndLinkRemote => 'Créer et lier un dépôt distant';
 
   @override
-  String get createLocalOnly => 'Local Only';
+  String get createLocalOnly => 'Local uniquement';
 
   @override
-  String get initMainBranch => 'Initialize main branch';
+  String get initMainBranch => 'Initialiser la branche main';
 
   @override
-  String get continueLabel => 'Continue';
+  String get continueLabel => 'Continuer';
 
   @override
-  String get githubScopedLoginTitle => 'Step 1: Sign In to GitHub';
+  String get githubScopedLoginTitle => 'Étape 1 : Connexion à GitHub';
 
   @override
   String get githubScopedLoginMsg =>
-      'You\'ll be redirected to GitHub to sign in.\n\nLog in with the account that has access to your repositories, then authorize GitSync.';
+      'Vous serez redirigé vers GitHub pour vous connecter.\n\nConnectez-vous avec le compte qui a accès à vos dépôts, puis autorisez GitSync.';
 
   @override
-  String get githubScopedRepoTitle => 'Step 2: Select Repositories';
+  String get githubScopedRepoTitle => 'Étape 2 : Sélectionner des dépôts';
 
   @override
-  String get githubScopedRepoMsg => 'Choose which repositories GitSync can access.\n\nWhen finished, close the browser to return to the app.';
+  String get githubScopedRepoMsg =>
+      'Choisissez les dépôts auxquels GitSync peut accéder.\n\nUne fois terminé, fermez le navigateur pour revenir à l\'app.';
 
   @override
   String get issueDescription => 'Description';
 
   @override
-  String get issueNoDescription => 'No description provided';
+  String get issueNoDescription => 'Aucune description fournie';
 
   @override
-  String get issueComments => 'Comments';
+  String get issueComments => 'Commentaires';
 
   @override
-  String get issueNoComments => 'No comments yet';
+  String get issueNoComments => 'Aucun commentaire pour l\'instant';
 
   @override
-  String get issueAddComment => 'Add a comment…';
+  String get issueAddComment => 'Ajouter un commentaire…';
 
   @override
-  String get issueSubmitComment => 'Submit';
+  String get issueSubmitComment => 'Envoyer';
 
   @override
-  String get issueCloseIssue => 'Close Issue';
+  String get issueCloseIssue => 'Fermer l\'issue';
 
   @override
-  String get issueReopenIssue => 'Reopen Issue';
+  String get issueReopenIssue => 'Rouvrir l\'issue';
 
   @override
-  String get issueAddReaction => 'Add Reaction';
+  String get issueAddReaction => 'Ajouter une réaction';
 
   @override
-  String get issueWriteDisabled => 'You do not have write access';
+  String get issueWriteDisabled => 'Vous n\'avez pas les droits d\'écriture';
 
   @override
-  String get issueStateUpdated => 'Issue state updated';
+  String get issueStateUpdated => 'État de l\'issue mis à jour';
 
   @override
-  String get issueCommentAdded => 'Comment added';
+  String get issueCommentAdded => 'Commentaire ajouté';
 
   @override
-  String get issueCommentFailed => 'Failed to add comment';
+  String get issueCommentFailed => 'Échec de l\'ajout du commentaire';
 
   @override
-  String get issueStateUpdateFailed => 'Failed to update issue state';
+  String get issueStateUpdateFailed => 'Échec de la mise à jour de l\'état';
 
   @override
-  String get issueReactionFailed => 'Failed to update reaction';
+  String get issueReactionFailed => 'Échec de la mise à jour de la réaction';
 
   @override
-  String get issuePreview => 'Preview';
+  String get issuePreview => 'Aperçu';
 
   @override
-  String get issueWrite => 'Write';
+  String get issueWrite => 'Écrire';
 
   @override
-  String get issueEditSuccess => 'Issue updated';
+  String get issueEditSuccess => 'Issue mise à jour';
 
   @override
-  String get issueEditFailed => 'Failed to update issue';
+  String get issueEditFailed => 'Échec de la mise à jour de l\'issue';
 
   @override
-  String get createIssue => 'Create Issue';
+  String get createIssue => 'Créer une issue';
 
   @override
-  String get createIssueTitle => 'Title';
+  String get createIssueTitle => 'Titre';
 
   @override
-  String get createIssueTitleHint => 'Issue title';
+  String get createIssueTitleHint => 'Titre de l\'issue';
 
   @override
   String get createIssueBody => 'Description';
 
   @override
-  String get createIssueBodyHint => 'Describe the issue…';
+  String get createIssueBodyHint => 'Décrivez l\'issue…';
 
   @override
-  String get createIssueSubmit => 'Submit Issue';
+  String get createIssueSubmit => 'Envoyer l\'issue';
 
   @override
-  String get createIssueSuccess => 'Issue created successfully';
+  String get createIssueSuccess => 'Issue créée avec succès';
 
   @override
-  String get createIssueFailed => 'Failed to create issue';
+  String get createIssueFailed => 'Échec de la création de l\'issue';
 
   @override
-  String get createIssueBlankIssue => 'Blank Issue';
+  String get createIssueBlankIssue => 'Issue vierge';
 
   @override
-  String get createIssueSelectTemplate => 'Choose a template';
+  String get createIssueSelectTemplate => 'Choisir un modèle';
 
   @override
-  String get createIssueRequired => 'Required';
+  String get createIssueRequired => 'Requis';
 
   @override
-  String get createPr => 'Create Pull Request';
+  String get createPr => 'Créer une pull request';
 
   @override
-  String get createPrTitle => 'Title';
+  String get createPrTitle => 'Titre';
 
   @override
-  String get createPrTitleHint => 'Pull request title';
+  String get createPrTitleHint => 'Titre de la pull request';
 
   @override
   String get createPrBody => 'Description';
 
   @override
-  String get createPrBodyHint => 'Describe your changes…';
+  String get createPrBodyHint => 'Décrivez vos modifications…';
 
   @override
-  String get createPrSubmit => 'Create Pull Request';
+  String get createPrSubmit => 'Créer la pull request';
 
   @override
-  String get createPrSuccess => 'Pull request created';
+  String get createPrSuccess => 'Pull request créée';
 
   @override
-  String get createPrFailed => 'Failed to create pull request';
+  String get createPrFailed => 'Échec de la création de la pull request';
 
   @override
   String get createPrBaseBranch => 'Base';
 
   @override
-  String get createPrHeadBranch => 'Compare';
+  String get createPrHeadBranch => 'Comparer';
 
   @override
-  String get createPrSelectBranch => 'Select branch';
+  String get createPrSelectBranch => 'Sélectionner une branche';
 
   @override
   String get prDescription => 'Description';
 
   @override
-  String get prNoDescription => 'No description provided';
+  String get prNoDescription => 'Aucune description fournie';
 
   @override
-  String get prActivity => 'Activity';
+  String get prActivity => 'Activité';
 
   @override
-  String get prNoActivity => 'No activity yet';
+  String get prNoActivity => 'Aucune activité pour l\'instant';
 
   @override
-  String get prCommits => 'Commits';
+  String get prCommits => 'Validations';
 
   @override
-  String get prCommitsNotFound => 'No commits found';
+  String get prCommitsNotFound => 'Aucune validation trouvée';
 
   @override
-  String get prChecks => 'Checks';
+  String get prChecks => 'Vérifications';
 
   @override
-  String get prChecksNotFound => 'No checks found';
+  String get prChecksNotFound => 'Aucune vérification trouvée';
 
   @override
-  String get prAllChecksPassed => 'All checks passed';
+  String get prAllChecksPassed => 'Toutes les vérifications réussies';
 
   @override
   String prChecksFailed(Object count) {
-    return '$count check(s) failed';
+    return '$count vérification(s) échouée(s)';
   }
 
   @override
-  String get prChecksPending => 'Checks pending';
+  String get prChecksPending => 'Vérifications en attente';
 
   @override
-  String get prFilesChanged => 'Files Changed';
+  String get prFilesChanged => 'Fichiers modifiés';
 
   @override
-  String get prFilesChangedNotFound => 'No changed files found';
+  String get prFilesChangedNotFound => 'Aucun fichier modifié trouvé';
 
   @override
   String get prConversation => 'Conversation';
 
   @override
-  String get prApproved => 'Approved';
+  String get prApproved => 'Approuvée';
 
   @override
-  String get prChangesRequested => 'Changes Requested';
+  String get prChangesRequested => 'Modifications demandées';
 
   @override
-  String get prCommented => 'Commented';
+  String get prCommented => 'Commenté';
 
   @override
-  String get prNotFound => 'Pull request not found';
+  String get prNotFound => 'Pull request introuvable';
 
   @override
-  String get prCommentAdded => 'Comment added';
+  String get prCommentAdded => 'Commentaire ajouté';
 
   @override
-  String get prCommentFailed => 'Failed to add comment';
+  String get prCommentFailed => 'Échec de l\'ajout du commentaire';
 
   @override
-  String get prReactionFailed => 'Failed to update reaction';
+  String get prReactionFailed => 'Échec de la mise à jour de la réaction';
 
   @override
-  String get prMentionedInPr => 'mentioned this in pull request';
+  String get prMentionedInPr => 'mentionné dans la pull request';
 
   @override
-  String get prMentionedInIssue => 'mentioned this in issue';
+  String get prMentionedInIssue => 'mentionné dans l\'issue';
 
   @override
   String prForcePushed(Object after, Object before) {
-    return 'force-pushed from $before to $after';
+    return 'force-push de $before vers $after';
   }
 
   @override
-  String get recentCommits => 'Recent Commits';
+  String get recentCommits => 'Validations récentes';
 
   @override
-  String get branchManagement => 'Branch Management';
+  String get branchManagement => 'Gestion des branches';
 
   @override
-  String get providerTools => 'Provider Tools';
+  String get providerTools => 'Outils du fournisseur';
+
+  @override
+  String get tabChat => 'Discussion';
+
+  @override
+  String get tabFiles => 'Fichiers';
+
+  @override
+  String get chatComingSoon => 'Fonctionnalités de chat à venir';
+
+  @override
+  String get chatComingSoonSubtitle => 'Interagissez avec vos fichiers via Claude Code';
+
+  @override
+  String get noRepoSetup => 'Configurez d\'abord un dépôt';
+
+  @override
+  String get enableAiFeatures => 'Activer les fonctionnalités IA';
+
+  @override
+  String get hideAiFeatures => 'Masquer les fonctionnalités IA';
+
+  @override
+  String get hideAiFeaturesConfirmTitle => 'Masquer les fonctionnalités IA ?';
+
+  @override
+  String get hideAiFeaturesConfirmMsg =>
+      'Cela supprimera l\'onglet IA et tous les boutons IA dans l\'application. Vous pouvez réactiver les fonctionnalités IA à tout moment depuis les paramètres globaux.';
+
+  @override
+  String get aiSetupTitle => 'Configurer l\'IA';
+
+  @override
+  String get aiSetupMsg => 'Configurez un fournisseur d\'IA pour utiliser cette fonctionnalité. Aller dans les paramètres IA ?';
 }

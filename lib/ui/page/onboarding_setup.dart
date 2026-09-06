@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -8,12 +9,15 @@ import 'package:GitSync/api/manager/storage.dart';
 import 'package:GitSync/constant/dimens.dart';
 import 'package:GitSync/constant/strings.dart';
 import 'package:GitSync/global.dart';
+import 'package:GitSync/providers/riverpod_providers.dart';
 import 'package:GitSync/type/git_provider.dart';
 import 'package:GitSync/ui/component/https_auth_form.dart';
 import 'package:GitSync/ui/component/ssh_auth_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -26,6 +30,7 @@ import 'package:GitSync/ui/component/scheduled_sync_settings.dart';
 import 'package:GitSync/ui/component/quick_sync_settings.dart';
 import 'package:GitSync/ui/dialog/github_scoped_guide.dart' as github_scoped_guide;
 import 'package:GitSync/ui/dialog/prominent_disclosure.dart' as ProminentDisclosureDialog;
+import 'package:GitSync/api/logger.dart';
 import 'package:GitSync/ui/page/clone_repo_main.dart';
 import 'package:GitSync/ui/page/unlock_premium.dart';
 
@@ -161,6 +166,7 @@ class GentleArchLinePainter extends CustomPainter {
 enum Screen {
   LegacyAppUser,
   Welcome,
+  HowYouFoundUs,
   ClientSyncMode,
   BrowseAndEdit,
   EnableNotifications,
@@ -170,16 +176,16 @@ enum Screen {
   SyncSettings,
 }
 
-class OnboardingSetup extends StatefulWidget {
+class OnboardingSetup extends ConsumerStatefulWidget {
   const OnboardingSetup({super.key, this.legacy = false});
 
   final legacy;
 
   @override
-  State<OnboardingSetup> createState() => _OnboardingSetup();
+  ConsumerState<OnboardingSetup> createState() => _OnboardingSetup();
 }
 
-class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserver, RestorationMixin, TickerProviderStateMixin {
+class _OnboardingSetup extends ConsumerState<OnboardingSetup> with WidgetsBindingObserver, RestorationMixin, TickerProviderStateMixin {
   late AnimationController _controller = AnimationController(vsync: this, duration: animationDuration, reverseDuration: reverseAnimationDuration)
     ..forward();
   late final Animation<double> _curvedAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOut, reverseCurve: Curves.easeIn);
@@ -194,6 +200,25 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
   final animationValue = ValueNotifier<double>(0.0);
   final screenIndex = ValueNotifier<Screen>(Screen.Welcome);
   final clientModeEnabled = ValueNotifier<bool>(false);
+  String? selectedSources;
+  final otherTextController = TextEditingController();
+  final showOtherField = ValueNotifier<bool>(false);
+  bool _isSubmitting = false;
+
+  List<(String, String)> get _discoverySources => [
+    ("reddit", t.sourceReddit),
+    ("obsidian", t.sourceObsidian),
+    ("youtube", t.sourceYoutube),
+    ("discord", t.sourceDiscord),
+    ("medium", t.sourceMedium),
+    ("google", t.sourceGoogle),
+    ("ai_search", t.sourceAiSearch),
+    ("github_fdroid", t.sourceGithubFdroid),
+    ("store", t.sourceStore),
+    ("advertisements", t.sourceAdvertisements),
+    ("word_of_mouth", t.sourceWordOfMouth),
+    ("other", t.sourceOther),
+  ];
 
   final animationDuration = Duration(seconds: 2);
   final reverseAnimationDuration = Duration(milliseconds: 800);
@@ -233,19 +258,29 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
   bool _isBackNavigating = false;
   bool _notificationsScreenWasShown = false;
 
+  Future<void> _afterAuth() async {
+    if ((await uiSettingsManager.getGitDirPath())?.$1 != null) {
+      await repoManager.setOnboardingStep(4);
+      if (!mounted) return;
+      screenIndex.value = Screen.SyncSettings;
+      return;
+    }
+    await repoManager.setOnboardingStep(3);
+    _showCloneRepoPage();
+  }
+
   Future<void> _completeOAuthAuth((String, String, String) credentials, GitProvider provider) async {
     await uiSettingsManager.setGitHttpAuthCredentials(credentials.$1, credentials.$2, credentials.$3);
-    await uiSettingsManager.setStringNullable(StorageKey.setman_gitProvider, provider.name);
+    ref.read(gitProviderProvider.notifier).set(provider);
     // If a repo dir is already set and has no remotes, offer remote creation
-    final dirPath = uiSettingsManager.gitDirPath?.$1;
+    final dirPath = (await uiSettingsManager.getGitDirPath())?.$1;
     if (dirPath != null) {
       final remotes = await GitManager.listRemotes();
       if (remotes.isEmpty && mounted) {
         await offerCreateRemoteForExistingRepo(context, dirPath);
       }
     }
-    await repoManager.setOnboardingStep(3);
-    _showCloneRepoPage();
+    await _afterAuth();
   }
 
   @override
@@ -258,16 +293,22 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
       _resumeFromStep();
     }
 
+    otherTextController.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     screenIndex.addListener(() async {
       _controller.forward();
 
       if (screenIndex.value == Screen.ClientSyncMode) {
-        clientModeEnabled.value = await uiSettingsManager.getBoolNullable(StorageKey.setman_clientModeEnabled, true) ?? false;
-        clientSyncModeScrollController.animateTo(
-          clientModeEnabled.value ? 0 : clientSyncModeScrollController.position.maxScrollExtent,
-          duration: animFast,
-          curve: Curves.easeInOut,
-        );
+        clientModeEnabled.value = ref.read(clientModeEnabledProvider).valueOrNull ?? false;
+        if (clientSyncModeScrollController.hasClients) {
+          clientSyncModeScrollController.animateTo(
+            clientModeEnabled.value ? 0 : clientSyncModeScrollController.position.maxScrollExtent,
+            duration: animFast,
+            curve: Curves.easeInOut,
+          );
+        }
       }
     });
   }
@@ -276,7 +317,13 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
     final step = await repoManager.getInt(StorageKey.repoman_onboardingStep);
     if (!mounted) return;
     if (step == 3) {
-      _showCloneRepoPage();
+      if ((await uiSettingsManager.getGitDirPath())?.$1 != null) {
+        await repoManager.setOnboardingStep(4);
+        if (!mounted) return;
+        screenIndex.value = Screen.SyncSettings;
+      } else {
+        _showCloneRepoPage();
+      }
     } else if (step == 4) {
       screenIndex.value = Screen.SyncSettings;
     } else if (step > 0) {
@@ -293,6 +340,8 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
     _syncPageController.dispose();
     _expandedSyncCard.dispose();
     _oauthLoading.dispose();
+    otherTextController.dispose();
+    showOtherField.dispose();
     super.dispose();
   }
 
@@ -309,6 +358,13 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
       case Screen.Welcome:
       case Screen.LegacyAppUser:
         _isBackNavigating = false;
+
+      case Screen.HowYouFoundUs:
+        _controller.reverse().then((_) {
+          if (!mounted) return;
+          screenIndex.value = Screen.Welcome;
+          _isBackNavigating = false;
+        });
 
       case Screen.ClientSyncMode:
         _controller.reverse().then((_) {
@@ -567,6 +623,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
       await _controller.reverse();
       screenIndex.value = Screen.EnableNotifications;
     } else {
+      await uiSettingsManager.setBool(StorageKey.setman_syncMessageEnabled, true);
       await showAllFilesAccessOrNext();
     }
   }
@@ -808,7 +865,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                             ),
                             onPressed: () async {
                               await _controller.reverse();
-                              screenIndex.value = Screen.ClientSyncMode;
+                              screenIndex.value = Screen.HowYouFoundUs;
                             },
                           ),
                         ),
@@ -824,6 +881,305 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
       ),
     ],
   );
+
+  Future<void> _submitDiscovery() async {
+    if (selectedSources == null || _isSubmitting) return;
+    _isSubmitting = true;
+
+    try {
+      final res = await http.post(
+        Uri.parse('$apiBaseUrl/api/v1/discovery'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'app_type': isOssBuild ? 'oss' : 'store',
+          'source': selectedSources,
+          if (selectedSources == "other" && otherTextController.text.trim().isNotEmpty) 'other_text': otherTextController.text.trim(),
+        }),
+      );
+      Logger.log(res.body, type: LogType.TEST);
+    } catch (e) {
+      _isSubmitting = false;
+      Logger.log(e, type: LogType.TEST);
+    }
+  }
+
+  Widget get howYouFoundUs => Stack(
+    children: [
+      Positioned(
+        right: spaceXXL,
+        top: spaceXXL,
+        child: Transform.rotate(
+          angle: -math.pi / 1.5,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height / 2,
+            child: AnimatedBuilder(
+              animation: _curvedAnimation,
+              builder: (context, child) {
+                return RepaintBoundary(
+                  child: CustomPaint(
+                    size: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height / 2),
+                    painter: GentleArchLinePainter(_curvedAnimation.value, colours.primaryLight, 200),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+      Positioned(
+        right: 0,
+        top: spaceXXL * 0.5,
+        child: Transform.rotate(
+          angle: -math.pi / 1.5,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height / 2,
+            child: AnimatedBuilder(
+              animation: _curvedAnimation,
+              builder: (context, child) {
+                return RepaintBoundary(
+                  child: CustomPaint(
+                    size: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height / 2),
+                    painter: GentleArchLinePainter(_curvedAnimation.value, colours.tertiaryNegative, 200),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+      Positioned(
+        right: -spaceXXL,
+        top: 0,
+        child: Transform.rotate(
+          angle: -math.pi / 1.5,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height / 2,
+            child: AnimatedBuilder(
+              animation: _curvedAnimation,
+              builder: (context, child) {
+                return RepaintBoundary(
+                  child: CustomPaint(
+                    size: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height / 2),
+                    painter: GentleArchLinePainter(_curvedAnimation.value, colours.tertiaryPositive, 200),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+      FadeTransition(
+        opacity: CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+        child: Padding(
+          padding: EdgeInsets.only(top: spaceSM * 2, left: spaceMD * 2, right: spaceMD * 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: MediaQuery.of(context).size.width, height: spaceLG + spaceXXL + spaceMD),
+                    Text(
+                      t.onboardingHowYouFoundUsTitle,
+                      style: TextStyle(
+                        color: colours.primaryLight,
+                        fontSize: textMD * 2,
+                        fontFamily: "AtkinsonHyperlegible",
+                        fontWeight: FontWeight.bold,
+                        shadows: _bgTextShadow,
+                      ),
+                    ),
+                    SizedBox(height: spaceXS),
+                    Text(
+                      t.onboardingHowYouFoundUsSubtitle,
+                      style: TextStyle(
+                        color: colours.secondaryLight,
+                        fontSize: textSM,
+                        fontFamily: "AtkinsonHyperlegible",
+                        fontWeight: FontWeight.bold,
+                        shadows: _bgTextShadow,
+                      ),
+                    ),
+                    SizedBox(height: spaceMD),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ..._discoverySources.map((source) => _discoverySourceItem(source.$1, source.$2)),
+                            ValueListenableBuilder<bool>(
+                              valueListenable: showOtherField,
+                              builder: (context, show, _) {
+                                if (!show) return SizedBox.shrink();
+                                return Padding(
+                                  padding: EdgeInsets.only(top: spaceSM, left: spaceMD + spaceSM + spaceSM),
+                                  child: TextField(
+                                    controller: otherTextController,
+                                    style: TextStyle(color: colours.primaryLight, fontSize: textSM, fontFamily: "AtkinsonHyperlegible"),
+                                    decoration: InputDecoration(
+                                      hintText: t.sourceOtherHint,
+                                      hintStyle: TextStyle(color: colours.secondaryLight, fontSize: textSM, fontFamily: "AtkinsonHyperlegible"),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(cornerRadiusMD),
+                                        borderSide: BorderSide(color: colours.tertiaryLight),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(cornerRadiusMD),
+                                        borderSide: BorderSide(color: colours.tertiaryLight),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(cornerRadiusMD),
+                                        borderSide: BorderSide(color: colours.tertiaryInfo, width: 2),
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: spaceSM, vertical: spaceSM),
+                                    ),
+                                    maxLines: 2,
+                                    maxLength: 500,
+                                    buildCounter: (context, {required int currentLength, required bool isFocused, required int? maxLength}) => null,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        child: TextButton.icon(
+                          onPressed: () async {
+                            await _controller.reverse();
+                            screenIndex.value = Screen.Welcome;
+                          },
+                          style: ButtonStyle(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: spaceXS)),
+                            backgroundColor: WidgetStatePropertyAll(colours.tertiaryInfo),
+                            shape: WidgetStatePropertyAll(
+                              RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusMD), side: BorderSide.none),
+                            ),
+                          ),
+                          icon: FaIcon(FontAwesomeIcons.arrowLeft, color: colours.secondaryDark, size: textSM),
+                          label: Text(
+                            t.backLabel.toUpperCase(),
+                            style: TextStyle(
+                              color: colours.primaryDark,
+                              fontWeight: FontWeight.bold,
+                              fontSize: textMD,
+                              fontFamily: "AtkinsonHyperlegible",
+                            ),
+                          ),
+                        ),
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: showOtherField,
+                        builder: (context, showOther, _) {
+                          final hasSelection = selectedSources != null;
+                          final otherEmpty = showOther && otherTextController.text.trim().isEmpty;
+                          final isContinue = hasSelection;
+                          final disabled = (isContinue && otherEmpty) || _isSubmitting;
+                          return TextButton(
+                            style: ButtonStyle(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: spaceXS)),
+                              backgroundColor: WidgetStatePropertyAll(
+                                disabled ? colours.tertiaryDark.withValues(alpha: 0.5) : colours.tertiaryPositive,
+                              ),
+                              shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(cornerRadiusMD),
+                                  side: disabled
+                                      ? BorderSide.none
+                                      : BorderSide(width: spaceXXXS, color: colours.secondaryPositive, strokeAlign: BorderSide.strokeAlignCenter),
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              (isContinue ? t.continueLabel : t.skip).toUpperCase(),
+                              style: TextStyle(
+                                color: disabled ? colours.secondaryLight : colours.secondaryDark,
+                                fontWeight: FontWeight.bold,
+                                fontSize: textMD,
+                                fontFamily: "AtkinsonHyperlegible",
+                              ),
+                            ),
+                            onPressed: isContinue
+                                ? (disabled
+                                      ? null
+                                      : () async {
+                                          await _submitDiscovery();
+                                          await _controller.reverse();
+                                          screenIndex.value = Screen.ClientSyncMode;
+                                        })
+                                : () async {
+                                    await _controller.reverse();
+                                    screenIndex.value = Screen.ClientSyncMode;
+                                  },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: spaceLG),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+
+  Widget _discoverySourceItem(String key, String label) {
+    final checked = selectedSources == key;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: spaceXXXS),
+      child: SizedBox(
+        width: double.infinity,
+        child: TextButton.icon(
+          onPressed: () {
+            setState(() {
+              selectedSources = checked ? null : key;
+              showOtherField.value = key == "other" && !checked;
+            });
+          },
+          style: ButtonStyle(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM)),
+            backgroundColor: WidgetStatePropertyAll(checked ? colours.tertiaryDark.withValues(alpha: 0.8) : colours.tertiaryDark),
+            alignment: Alignment.centerLeft,
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(cornerRadiusMD),
+                side: checked ? BorderSide(width: 2, color: colours.tertiaryPositive) : BorderSide.none,
+              ),
+            ),
+          ),
+          icon: FaIcon(
+            checked ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circle,
+            color: checked ? colours.tertiaryPositive : colours.secondaryLight,
+            size: textSM,
+          ),
+          label: Text(
+            label,
+            style: TextStyle(color: colours.primaryLight, fontSize: textSM, fontFamily: "AtkinsonHyperlegible", fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget get clientSyncMode => Stack(
     children: [
@@ -942,12 +1298,14 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                     child: GestureDetector(
                                       onTap: () async {
                                         clientModeEnabled.value = true;
-                                        clientSyncModeScrollController.animateTo(
-                                          clientModeEnabled.value ? 0 : clientSyncModeScrollController.position.maxScrollExtent,
-                                          duration: animFast,
-                                          curve: Curves.easeInOut,
-                                        );
-                                        await uiSettingsManager.setBoolNullable(StorageKey.setman_clientModeEnabled, true);
+                                        if (clientSyncModeScrollController.hasClients) {
+                                          clientSyncModeScrollController.animateTo(
+                                            clientModeEnabled.value ? 0 : clientSyncModeScrollController.position.maxScrollExtent,
+                                            duration: animFast,
+                                            curve: Curves.easeInOut,
+                                          );
+                                        }
+                                        ref.read(clientModeEnabledProvider.notifier).set(true);
                                       },
                                       child: Padding(
                                         padding: EdgeInsets.all(spaceMD).add(EdgeInsets.only(top: spaceMD)),
@@ -963,7 +1321,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                                 top: spaceXS + spaceXXXS,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withOpacity(0.8),
+                                                color: isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withAlpha(204),
                                                 borderRadius: BorderRadius.only(topLeft: cornerRadiusSM, topRight: cornerRadiusSM),
                                               ),
                                               child: Row(
@@ -997,7 +1355,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                                 bottom: spaceXS + spaceXXXS,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withOpacity(0.8),
+                                                color: isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withAlpha(204),
                                                 borderRadius: BorderRadius.only(topLeft: cornerRadiusSM, bottomLeft: cornerRadiusSM),
                                               ),
                                               child: AnimatedDefaultTextStyle(
@@ -1036,12 +1394,14 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                     child: GestureDetector(
                                       onTap: () async {
                                         clientModeEnabled.value = false;
-                                        clientSyncModeScrollController.animateTo(
-                                          clientModeEnabled.value ? 0 : clientSyncModeScrollController.position.maxScrollExtent,
-                                          duration: animFast,
-                                          curve: Curves.easeInOut,
-                                        );
-                                        await uiSettingsManager.setBoolNullable(StorageKey.setman_clientModeEnabled, false);
+                                        if (clientSyncModeScrollController.hasClients) {
+                                          clientSyncModeScrollController.animateTo(
+                                            clientModeEnabled.value ? 0 : clientSyncModeScrollController.position.maxScrollExtent,
+                                            duration: animFast,
+                                            curve: Curves.easeInOut,
+                                          );
+                                        }
+                                        ref.read(clientModeEnabledProvider.notifier).set(false);
                                       },
                                       child: Padding(
                                         padding: EdgeInsets.all(spaceMD).add(EdgeInsets.only(bottom: spaceMD)),
@@ -1057,7 +1417,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                                 top: spaceXS + spaceXXXS,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: !isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withOpacity(0.8),
+                                                color: !isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withAlpha(204),
                                                 borderRadius: BorderRadius.only(topLeft: cornerRadiusSM, topRight: cornerRadiusSM),
                                               ),
                                               child: Row(
@@ -1091,7 +1451,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                                 bottom: spaceXS + spaceXXXS,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: !isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withOpacity(0.8),
+                                                color: !isClientMode ? colours.tertiaryDark : colours.tertiaryDark.withAlpha(204),
                                                 borderRadius: BorderRadius.only(topRight: cornerRadiusSM, bottomRight: cornerRadiusSM),
                                               ),
                                               child: AnimatedDefaultTextStyle(
@@ -1148,7 +1508,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                           child: TextButton.icon(
                             onPressed: () async {
                               await _controller.reverse();
-                              screenIndex.value = Screen.Welcome;
+                              screenIndex.value = Screen.HowYouFoundUs;
                             },
                             style: ButtonStyle(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1510,17 +1870,19 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                             ),
                           ),
                         ),
-                        child: ValueListenableBuilder<bool?>(
-                          valueListenable: premiumManager.hasPremiumNotifier,
-                          builder: (context, hasPremium, _) => Text(
-                            (hasPremium == true ? t.continueLabel : t.onboardingPremiumFeatures).toUpperCase(),
-                            style: TextStyle(
-                              color: colours.secondaryDark,
-                              fontWeight: FontWeight.bold,
-                              fontSize: textMD,
-                              fontFamily: "AtkinsonHyperlegible",
-                            ),
-                          ),
+                        child: Builder(
+                          builder: (context) {
+                            final hasPremium = ref.watch(premiumStatusProvider);
+                            return Text(
+                              (hasPremium == true ? t.continueLabel : t.onboardingPremiumFeatures).toUpperCase(),
+                              style: TextStyle(
+                                color: colours.secondaryDark,
+                                fontWeight: FontWeight.bold,
+                                fontSize: textMD,
+                                fontFamily: "AtkinsonHyperlegible",
+                              ),
+                            );
+                          },
                         ),
                         onPressed: () async {
                           await _controller.reverse();
@@ -1544,12 +1906,12 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
     ],
   );
 
-  Widget _modeFeatureItem(IconData icon, String text, bool isSelected, [bool right = false, bool last = false]) {
+  Widget _modeFeatureItem(FaIconData icon, String text, bool isSelected, [bool right = false, bool last = false]) {
     return AnimatedContainer(
       duration: animFast,
       padding: EdgeInsets.symmetric(horizontal: spaceSM + spaceXS, vertical: spaceXS + spaceXXXS),
       decoration: BoxDecoration(
-        color: isSelected ? colours.tertiaryDark : colours.tertiaryDark.withOpacity(0.8),
+        color: isSelected ? colours.tertiaryDark : colours.tertiaryDark.withAlpha(204),
         borderRadius: BorderRadius.only(
           topLeft: !right ? cornerRadiusSM : Radius.zero,
           bottomLeft: right && last || !right ? cornerRadiusSM : Radius.zero,
@@ -1576,7 +1938,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
     );
   }
 
-  Widget _browseFeatureItem(IconData icon, String text) {
+  Widget _browseFeatureItem(FaIconData icon, String text) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: spaceXXXS),
       child: Row(
@@ -1625,7 +1987,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
     );
   }
 
-  // Widget _almostThereCard(IconData icon, String text) {
+  // Widget _almostThereCard(FaIconData icon, String text) {
   //   return Container(
   //     width: double.infinity,
   //     padding: EdgeInsets.symmetric(horizontal: spaceSM, vertical: spaceSM),
@@ -1773,6 +2135,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                       constraints: BoxConstraints(),
                       onPressed: () async {
                         if (await Permission.notification.request().isGranted) {
+                          await uiSettingsManager.setBool(StorageKey.setman_syncMessageEnabled, true);
                           await showAllFilesAccessOrNext();
                         }
                       },
@@ -2420,7 +2783,44 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                           onPressed: () async {
                                             _oauthLoading.value = true;
                                             try {
-                                              uiSettingsManager.setBool(StorageKey.setman_githubScopedOauth, false);
+                                              final gitProviderManager = GitProviderManager.getGitProviderManager(GitProvider.CODEBERG, false);
+                                              if (gitProviderManager == null) return;
+                                              final result = await gitProviderManager.launchOAuthFlow();
+                                              if (result == null) return;
+                                              await _completeOAuthAuth(result, GitProvider.CODEBERG);
+                                            } finally {
+                                              _oauthLoading.value = false;
+                                            }
+                                          },
+                                          style: ButtonStyle(
+                                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM)),
+                                            backgroundColor: WidgetStatePropertyAll(colours.tertiaryDark),
+                                            alignment: Alignment.centerLeft,
+                                            shape: WidgetStatePropertyAll(
+                                              RoundedRectangleBorder(borderRadius: BorderRadius.all(cornerRadiusMD), side: BorderSide.none),
+                                            ),
+                                          ),
+                                          icon: FaIcon(codeberg_logo, size: textSM, color: colours.codebergBlue),
+                                          label: Text(
+                                            "CODEBERG",
+                                            style: TextStyle(
+                                              color: colours.primaryLight,
+                                              fontSize: textMD,
+                                              fontFamily: "AtkinsonHyperlegible",
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: spaceXXS),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: TextButton.icon(
+                                          onPressed: () async {
+                                            _oauthLoading.value = true;
+                                            try {
+                                              ref.read(githubScopedOauthProvider.notifier).set(false);
 
                                               final gitProviderManager = GithubManager();
 
@@ -2465,7 +2865,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                           onPressed: () async {
                                             _oauthLoading.value = true;
                                             try {
-                                              uiSettingsManager.setBool(StorageKey.setman_githubScopedOauth, true);
+                                              ref.read(githubScopedOauthProvider.notifier).set(true);
 
                                               final gitProviderManager = GithubAppManager();
 
@@ -2710,9 +3110,8 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                     HttpsAuthForm(
                                       onAuthenticated: (username, token) async {
                                         await uiSettingsManager.setGitHttpAuthCredentials(username, "", token);
-                                        await uiSettingsManager.setStringNullable(StorageKey.setman_gitProvider, GitProvider.HTTPS.name);
-                                        await repoManager.setOnboardingStep(3);
-                                        _showCloneRepoPage();
+                                        ref.read(gitProviderProvider.notifier).set(GitProvider.HTTPS);
+                                        await _afterAuth();
                                       },
                                     ),
                                   ],
@@ -2725,9 +3124,8 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                       parentContext: context,
                                       onAuthenticated: (passphrase, privateKey) async {
                                         uiSettingsManager.setGitSshAuthCredentials(passphrase, privateKey);
-                                        await uiSettingsManager.setStringNullable(StorageKey.setman_gitProvider, GitProvider.SSH.name);
-                                        await repoManager.setOnboardingStep(3);
-                                        _showCloneRepoPage();
+                                        ref.read(gitProviderProvider.notifier).set(GitProvider.SSH);
+                                        await _afterAuth();
                                       },
                                     ),
                                   ],
@@ -2814,8 +3212,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                           ),
                           TextButton(
                             onPressed: () async {
-                              await repoManager.setOnboardingStep(3);
-                              _showCloneRepoPage();
+                              await _afterAuth();
                             },
                             style: ButtonStyle(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -2852,9 +3249,7 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
           if (!loading) return SizedBox.shrink();
           return Container(
             color: colours.secondaryDark.withValues(alpha: 0.7),
-            child: Center(
-              child: CircularProgressIndicator(color: colours.primaryLight),
-            ),
+            child: Center(child: CircularProgressIndicator(color: colours.primaryLight)),
           );
         },
       ),
@@ -2863,10 +3258,10 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
 
   Widget _onboardingSyncCard({
     required int index,
-    required IconData icon,
+    required FaIconData icon,
     required String title,
     required String subtitle,
-    required List<(IconData, String)> features,
+    required List<(FaIconData, String)> features,
     required Widget? settingsBody,
     VoidCallback? onTap,
     Future<bool> Function(BuildContext)? onBeforeExpand,
@@ -3140,36 +3535,42 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(width: MediaQuery.of(context).size.width, height: spaceLG + spaceXXL + spaceMD),
-                      Text(
-                        t.onboardingSyncSettingsTitle,
-                        style: TextStyle(
-                          color: colours.primaryLight,
-                          fontSize: textMD * 2,
-                          fontFamily: "AtkinsonHyperlegible",
-                          fontWeight: FontWeight.bold,
-                          shadows: _bgTextShadow,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(width: MediaQuery.of(context).size.width, height: spaceLG + spaceXXL + spaceMD),
+                          Text(
+                            t.onboardingSyncSettingsTitle,
+                            style: TextStyle(
+                              color: colours.primaryLight,
+                              fontSize: textMD * 2,
+                              fontFamily: "AtkinsonHyperlegible",
+                              fontWeight: FontWeight.bold,
+                              shadows: _bgTextShadow,
+                            ),
+                          ),
+                          SizedBox(height: spaceXS),
+                          Text(
+                            t.onboardingSyncSettingsSubtitle,
+                            style: TextStyle(
+                              color: colours.tertiaryLight,
+                              fontSize: textSM,
+                              fontFamily: "AtkinsonHyperlegible",
+                              fontWeight: FontWeight.bold,
+                              shadows: _bgTextShadow,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: spaceXS),
-                      Text(
-                        t.onboardingSyncSettingsSubtitle,
-                        style: TextStyle(
-                          color: colours.tertiaryLight,
-                          fontSize: textSM,
-                          fontFamily: "AtkinsonHyperlegible",
-                          fontWeight: FontWeight.bold,
-                          shadows: _bgTextShadow,
-                        ),
-                      ),
-                      SizedBox(height: MediaQuery.of(context).viewInsets.bottom != 0 ? spaceLG : spaceLG * 3.5),
-                      Expanded(
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: _syncSettingsPage,
-                          builder: (context, currentPage, _) => Column(
-                            children: [
-                              Expanded(
+                      ValueListenableBuilder<int>(
+                        valueListenable: _syncSettingsPage,
+                        builder: (context, currentPage, _) => Column(
+                          children: [
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2),
+                              child: Expanded(
                                 child: PageView(
                                   controller: _syncPageController,
                                   onPageChanged: (index) {
@@ -3179,28 +3580,28 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
                                   children: syncCards,
                                 ),
                               ),
-                              SizedBox(height: spaceSM),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(syncCards.length, (index) {
-                                  final isActive = currentPage == index;
-                                  return AnimatedContainer(
-                                    duration: animFast,
-                                    margin: EdgeInsets.symmetric(horizontal: spaceXXXS),
-                                    width: spaceXS,
-                                    height: spaceXS,
-                                    decoration: BoxDecoration(
-                                      color: isActive ? colours.tertiaryInfo : colours.tertiaryInfo.withValues(alpha: 0.3),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  );
-                                }),
-                              ),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: spaceSM),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(syncCards.length, (index) {
+                                final isActive = currentPage == index;
+                                return AnimatedContainer(
+                                  duration: animFast,
+                                  margin: EdgeInsets.symmetric(horizontal: spaceXXXS),
+                                  width: spaceXS,
+                                  height: spaceXS,
+                                  decoration: BoxDecoration(
+                                    color: isActive ? colours.tertiaryInfo : colours.tertiaryInfo.withValues(alpha: 0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                );
+                              }),
+                            ),
+                            SizedBox(height: spaceLG),
+                          ],
                         ),
                       ),
-                      SizedBox(height: spaceLG),
                     ],
                   ),
                 ),
@@ -3283,6 +3684,8 @@ class _OnboardingSetup extends State<OnboardingSetup> with WidgetsBindingObserve
             child = legacyAppUser;
           case Screen.Welcome:
             child = welcome;
+          case Screen.HowYouFoundUs:
+            child = howYouFoundUs;
           case Screen.ClientSyncMode:
             child = clientSyncMode;
           case Screen.BrowseAndEdit:

@@ -6,6 +6,7 @@
 
     "@@x-GENERAL": "",
     "dismiss": "Dismiss",
+    "dontShowAgain": "Don't Show Again",
     "skip": "Skip",
     "done": "Done",
     "confirm": "Confirm",
@@ -55,9 +56,6 @@
     "@@x-PAID_FEATURES": "",
     "premiumDialogTitle": "Unlock Premium",
     "restorePurchase": "Restore Purchase",
-    "verifyGhSponsorTitle": "Verify GitHub Sponsorship",
-    "verifyGhSponsorMsg": "If you are a GitHub Sponsor, you can access premium features for free. Authenticate with GitHub so we can verify your sponsor status.",
-    "verifyGhSponsorNote": "Note: new sponsorships may take up to 1 day to become available in the app.",
 
     "premiumStoreOnlyBanner": "Store version only — Get it on the App Store or Play Store",
 
@@ -141,9 +139,10 @@
     "abortMerge": "Abort Merge",
     "resolveLater": "Resolve Later",
     "keepChanges": "Keep Changes",
-    "local": "Local",
+    "current": "Current",
     "both": "Both",
     "remote": "Remote",
+    "incoming": "Incoming",
     "merge": "Merge",
     "resolve": "Resolve",
     "merging": "Merging…",
@@ -151,8 +150,8 @@
     "clearSelection": "Clear Selection",
     "keepSelected": "Keep Selected",
     "resolveAll": "Resolve All",
-    "allLocal": "All Local",
-    "allRemote": "All Remote",
+    "allCurrent": "All Current",
+    "allIncoming": "All Incoming",
 
 
 
@@ -300,6 +299,22 @@
 
     "onboardingLaunchWiki": "Launch the wiki",
 
+    "onboardingHowYouFoundUsTitle": "How did you discover GitSync?",
+    "onboardingHowYouFoundUsSubtitle": "Help us understand where our users come from (select all that apply)",
+    "sourceReddit": "Reddit",
+    "sourceYoutube": "YouTube",
+    "sourceDiscord": "Discord",
+    "sourceMedium": "Medium",
+    "sourceGoogle": "Google Search",
+    "sourceGithubFdroid": "GitHub / F-Droid",
+    "sourceStore": "Play Store / App Store",
+    "sourceWordOfMouth": "Word of mouth",
+    "sourceAdvertisements": "Advertisements",
+    "sourceObsidian": "Obsidian Git Plugin",
+    "sourceAiSearch": "AI Search (ChatGPT, Claude, Grok)",
+    "sourceOther": "Other",
+    "sourceOtherHint": "Tell us where",
+
 
     "@@x-HOME_PAGE": "",
     "currentBranch": "Current Branch",
@@ -336,7 +351,7 @@
     "iosSyncOnAppOpened": "Sync on GitSync opened",
     "scheduledSyncSettings": "Scheduled Sync Settings",
     "scheduledSyncDescription": "Automatically syncs periodically in the background",
-    "sync": "Sync",
+    "tabHome": "Home",
     "iosDefaultSyncRate": "when iOS allows",
     "every": "every",
     "scheduledSync": "Scheduled Sync",
@@ -365,6 +380,9 @@
 
 
     "@@x-AUTH": "",
+    "remoteAuthMismatchTitle": "Auth won't work with this remote",
+    "remoteAuthMismatchUsesSsh": "This remote uses SSH — tap to switch",
+    "remoteAuthMismatchUsesHttps": "This remote uses HTTPS or OAuth — tap to switch",
     "selectYourGitProviderAndAuthenticate": "Select your git provider and authenticate",
     "oauthProviders": "oAuth Providers",
     "gitProtocols": "Git Protocols",
@@ -539,6 +557,8 @@
     "openFileDescription": "Preview/edit file contents",
     "viewGitLog": "view git log",
     "viewGitLogDescription": "View the full git log history",
+    "openInTextastic": "Open in Textastic",
+    "openInTextasticDescription": "Open file in Textastic app",
     "ignoreUntrack": ".gitignore + Untrack",
     "ignoreUntrackDescription": "Add files to .gitignore and untrack",
     "excludeUntrack": ".git/info/exclude + Untrack",
@@ -721,11 +741,14 @@
     "troubleshooting": "Troubleshooting",
     "youreOffline": "You're offline.",
     "someFeaturesMayNotWork": "Some features may not work.",
-    "unsupportedGitAttributes": "This repo uses git features only available in store versions.",
+    "unsupportedGitAttributes": "This repo uses git filters, only available in store versions.",
     "tapToOpenPlayStore": "Tap to update.",
     "ongoingMergeConflict": "Ongoing merge conflict",
     "networkStallRetry": "Poor network — will retry shortly",
     "networkUnavailableRetry": "Network unavailable!\nGitSync will retry when reconnected",
+    "networkStallManual": "Poor network — please try again",
+    "networkUnavailableManual": "Network unavailable — please try again",
+    "networkRetryComplete": "Queued operation completed",
     "failedToResolveAddressMessage": "Could not reach the server. Check your internet connection or verify the repository URL is correct.",
     "pullFailed": "Pull failed! Please check for uncommitted changes and try again.",
     "reportABug": "Report a Bug",
@@ -759,6 +782,13 @@
     "issueReportSuccessTitle": "Issue Reported Successfully",
     "issueReportSuccessMsg": "Your issue has been reported. Bookmark this page to track progress and respond to messages. \n\nPlease avoid creating duplicate issues, as that makes resolution harder. \n\nIssues with no activity for 7 days are automatically closed.",
     "trackIssue": "Track Issue & Respond to Messages",
+    "issueDuplicateTitle": "Already Reported",
+    "issueDuplicateMsg": "This bug has already been reported and is being tracked in an open issue. \n\nOpen the issue to follow progress, or send your report as a message there so it reaches us without creating a duplicate.",
+    "viewIssue": "View Issue",
+    "sendMessage": "Send As Message",
+    "issueCommentSuccessTitle": "Message Sent",
+    "issueCommentSuccessMsg": "Your report has been added to the existing issue. Bookmark this page to track progress and respond to messages. \n\nIssues with no activity for 7 days are automatically closed.",
+    "issueCommentFailedMsg": "Your message couldn’t be sent. Please check your connection and try again.",
     "createNewRepository": "Create New Repository",
     "noGitRepoFoundMsg": "No git repository was found in the selected folder. Would you like to create a new one here?",
     "remoteSetupLaterMsg": "This creates a local repository.\nAuthenticate and add a remote to enable sync.",
@@ -859,5 +889,20 @@
     "@@x-EXPANDED_COMMITS": "",
     "recentCommits": "Recent Commits",
     "branchManagement": "Branch Management",
-    "providerTools": "Provider Tools"
+    "providerTools": "Provider Tools",
+
+    "@@x-BOTTOM_NAV": "",
+    "tabChat": "Chat",
+    "tabFiles": "Files",
+    "chatComingSoon": "Chat features coming soon",
+    "chatComingSoonSubtitle": "Interact with your files using Claude Code",
+    "noRepoSetup": "Set up a repository first",
+
+    "@@x-AI": "",
+    "enableAiFeatures": "Enable AI Features",
+    "hideAiFeatures": "Hide AI Features",
+    "hideAiFeaturesConfirmTitle": "Hide AI Features?",
+    "hideAiFeaturesConfirmMsg": "This will remove the AI tab and all AI buttons throughout the app. You can re-enable AI features anytime from Global Settings.",
+    "aiSetupTitle": "Set Up AI",
+    "aiSetupMsg": "Configure an AI provider to use this feature. Go to AI settings?"
 }

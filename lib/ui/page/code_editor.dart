@@ -8,12 +8,14 @@ import 'package:GitSync/api/manager/storage.dart';
 import 'package:GitSync/constant/dimens.dart';
 import 'package:GitSync/constant/values.dart';
 import 'package:GitSync/global.dart';
+import 'package:GitSync/providers/riverpod_providers.dart';
 import 'package:GitSync/ui/component/button_setting.dart';
 import 'package:GitSync/ui/component/code_line_number_render_object.dart';
 import 'package:GitSync/ui/dialog/info_dialog.dart' as InfoDialog;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mmap2/mmap2.dart';
 import 'package:mmap2_flutter/mmap2_flutter.dart';
@@ -113,7 +115,7 @@ class PopupMenuItemData {
 
   final String label;
   final VoidCallback? onPressed;
-  final IconData? icon;
+  final FaIconData? icon;
   final bool danger;
 }
 
@@ -221,14 +223,14 @@ class _CodeEditor extends State<CodeEditor> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: colours.secondaryDark,
+      backgroundColor: colours.primaryDark,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: colours.secondaryDark,
-          systemNavigationBarColor: colours.secondaryDark,
+          statusBarColor: colours.primaryDark,
+          systemNavigationBarColor: colours.primaryDark,
           statusBarIconBrightness: Brightness.light,
           systemNavigationBarIconBrightness: Brightness.light,
         ),
@@ -345,7 +347,7 @@ class _CodeEditor extends State<CodeEditor> {
   }
 }
 
-class Editor extends StatefulWidget {
+class Editor extends ConsumerStatefulWidget {
   const Editor({super.key, this.verticalScrollController, this.text, this.path, this.type = EditorType.DEFAULT});
 
   final String? text;
@@ -354,10 +356,10 @@ class Editor extends StatefulWidget {
   final ScrollController? verticalScrollController;
 
   @override
-  State<Editor> createState() => _EditorState();
+  ConsumerState<Editor> createState() => _EditorState();
 }
 
-class _EditorState extends State<Editor> with WidgetsBindingObserver {
+class _EditorState extends ConsumerState<Editor> with WidgetsBindingObserver {
   final fileSaving = ValueNotifier(false);
   final ReEditor.CodeLineEditingController controller = ReEditor.CodeLineEditingController();
   final ScrollController horizontalController = ScrollController();
@@ -520,8 +522,57 @@ class _EditorState extends State<Editor> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _showExperimentalInfoDialog() async {
+    await InfoDialog.showDialog(
+      context,
+      t.codeEditorLimits,
+      t.codeEditorLimitsDescription,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: spaceMD),
+          ButtonSetting(
+            text: t.requestAFeature,
+            icon: FontAwesomeIcons.solidHandPointUp,
+            onPressed: () async {
+              if (await canLaunchUrl(Uri.parse(githubFeatureTemplate))) {
+                await launchUrl(Uri.parse(githubFeatureTemplate));
+              }
+            },
+          ),
+          SizedBox(height: spaceSM),
+          ButtonSetting(
+            text: t.reportABug,
+            icon: FontAwesomeIcons.bug,
+            textColor: colours.primaryDark,
+            iconColor: colours.primaryDark,
+            buttonColor: colours.tertiaryNegative,
+            onPressed: () async {
+              await Logger.reportIssue(context, From.CODE_EDITOR);
+            },
+          ),
+          SizedBox(height: spaceSM),
+          Builder(
+            builder: (dialogContext) => ButtonSetting(
+              text: t.dontShowAgain,
+              icon: FontAwesomeIcons.eyeSlash,
+              textColor: colours.secondaryLight,
+              iconColor: colours.secondaryLight,
+              onPressed: () async {
+                ref.read(showEditorExperimentalNoticeProvider.notifier).set(false);
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final showExperimentalNotice = ref.watch(showEditorExperimentalNoticeProvider).valueOrNull ?? true;
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -663,69 +714,41 @@ class _EditorState extends State<Editor> with WidgetsBindingObserver {
                   },
                 ),
         ),
-        if (widget.type == EditorType.DEFAULT)
+        if (widget.type == EditorType.DEFAULT && showExperimentalNotice)
           Positioned(
             bottom: spaceXXL,
-            child: Container(
-              decoration: BoxDecoration(color: colours.primaryDark, borderRadius: BorderRadius.all(cornerRadiusSM)),
-              padding: EdgeInsets.symmetric(horizontal: spaceSM, vertical: spaceXS),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                        constraints: BoxConstraints(),
-                        onPressed: () async {
-                          await InfoDialog.showDialog(
-                            context,
-                            t.codeEditorLimits,
-                            t.codeEditorLimitsDescription,
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                SizedBox(height: spaceMD),
-                                ButtonSetting(
-                                  text: t.requestAFeature,
-                                  icon: FontAwesomeIcons.solidHandPointUp,
-                                  onPressed: () async {
-                                    if (await canLaunchUrl(Uri.parse(githubFeatureTemplate))) {
-                                      await launchUrl(Uri.parse(githubFeatureTemplate));
-                                    }
-                                  },
-                                ),
-                                SizedBox(height: spaceSM),
-                                ButtonSetting(
-                                  text: t.reportABug,
-                                  icon: FontAwesomeIcons.bug,
-                                  textColor: colours.primaryDark,
-                                  iconColor: colours.primaryDark,
-                                  buttonColor: colours.tertiaryNegative,
-                                  onPressed: () async {
-                                    await Logger.reportIssue(context, From.CODE_EDITOR);
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        visualDensity: VisualDensity.compact,
-                        icon: FaIcon(FontAwesomeIcons.circleInfo, color: colours.secondaryLight, size: textMD),
-                      ),
-                      Text(
-                        t.experimental.toUpperCase(),
-                        style: TextStyle(color: colours.primaryLight, fontSize: textMD, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: spaceXS),
-                    ],
-                  ),
-                  SizedBox(height: spaceXXXS),
-                  Text(
-                    t.experimentalMsg,
-                    style: TextStyle(color: colours.secondaryLight, fontSize: textSM),
-                  ),
-                ],
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _showExperimentalInfoDialog,
+              child: Container(
+                decoration: BoxDecoration(color: colours.primaryDark, borderRadius: BorderRadius.all(cornerRadiusSM)),
+                padding: EdgeInsets.symmetric(horizontal: spaceSM, vertical: spaceXS),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                          constraints: BoxConstraints(),
+                          onPressed: _showExperimentalInfoDialog,
+                          visualDensity: VisualDensity.compact,
+                          icon: FaIcon(FontAwesomeIcons.circleInfo, color: colours.secondaryLight, size: textMD),
+                        ),
+                        Text(
+                          t.experimental.toUpperCase(),
+                          style: TextStyle(color: colours.primaryLight, fontSize: textMD, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: spaceXS),
+                      ],
+                    ),
+                    SizedBox(height: spaceXXXS),
+                    Text(
+                      t.experimentalMsg,
+                      style: TextStyle(color: colours.secondaryLight, fontSize: textSM),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -27,6 +27,7 @@ Future<void> showDialog(BuildContext parentContext, Function() callback) async {
   Future<void> finish(BuildContext context, GitProvider selectedGitProvider) async {
     await uiSettingsManager.setStringNullable(StorageKey.setman_gitProvider, selectedGitProvider.name);
     Navigator.of(context).canPop() ? Navigator.pop(context) : null;
+    Navigator.of(context).canPop() ? Navigator.pop(context) : null;
     callback();
   }
 
@@ -112,6 +113,7 @@ Future<void> showDialog(BuildContext parentContext, Function() callback) async {
           ],
         );
       case GitProvider.GITEA:
+      case GitProvider.CODEBERG:
       case GitProvider.GITLAB:
         return TextButton.icon(
           onPressed: () async {
@@ -147,6 +149,7 @@ Future<void> showDialog(BuildContext parentContext, Function() callback) async {
     switch (selectedGitProvider) {
       case GitProvider.GITHUB:
       case GitProvider.GITEA:
+      case GitProvider.CODEBERG:
       case GitProvider.GITLAB:
         return Padding(
           padding: EdgeInsets.only(top: spaceMD, left: spaceMD, right: spaceMD),
